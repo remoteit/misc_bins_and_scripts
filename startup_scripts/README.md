@@ -11,9 +11,9 @@ Working examples are as follows:
 
 
 
-* The above scripts assume Weaved Provisioning files in /etc/weaved
+* The above scripts assume a Weaved enablement file (https://github.com/weaved/installer/tree/master/weaved_software/enablements) in /etc/weaved
 
-* They can be modified to use other provisioning files.  This scripts assume a seperate startup script for each service you wish to enable.
+* They can be modified to use other enablement files.  This scripts assume a seperate startup script that points to service you wish to enable.
 
 ## Example
 

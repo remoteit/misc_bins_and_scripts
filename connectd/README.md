@@ -1,21 +1,17 @@
-# Misc Startup Scripts
-Various Startup Script Examples
+# Misc Bins
+Precompiled Bins for differnet OS and Architectures
 
-Working examples are as follows:
+If none of these run, let me know and we will help you build it for your platform.
 
-0. startup_script_generic.sh           -  This is a generic startup script example, should work on most platforms as an example.
+Currently here are:
+0. weavedConnectd.arm.uclib.static : ELF 32-bit LSB executable, ARM, version 1, statically linked
+0. weavedConnectd.arm-eabi.static : ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked
+0. weavedConnectd.arm-linaro.static : ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked (pi static)
+0. weavedConnectd.mips-openwrt : ELF 32-bit MSB executable, MIPS, MIPS32 rel2 version 1 (SYSV), statically linked
+0. weavedConnectd.mips-old.static : ELF 32-bit LSB executable, MIPS, MIPS-I version 1 (SYSV), statically linked
 
-0. startup_script_openwrt.sh           - SSH example for OpenWRT Barrier Breaker SSH, will track SSH port based on Open WRT config.  Assumes SSH enablement file in /etc/weaved
+0. weavedConnectd.mips-openwrt-plug : built 7/18/2015 : Target the Weaved Plug, Barrier Breaker RT5350, includes notification
+built with toolchain-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2, dynamically Linked
 
-0. startup_script_aria_arietta.sh      - SSH example for the Aria/Arietta G25 from http://www.acmesystems.it, Assumes SSH provisioning file in /etc/weaved and the weavedConnectd.arm-eabi-4.4.0.static binary (https://github.com/weaved/misc_bins_and_scripts/blob/master/connectd/weavedConnectd.arm-eabi-4.4.0.static) .  But script is useful for any Debian "Wheezy" system.
-
-
-
-* The above scripts assume a Weaved enablement file (https://github.com/weaved/installer/tree/master/weaved_software/enablements) in /etc/weaved
-
-* They can be modified to use other enablement files.  This scripts assume a seperate startup script that points to service you wish to enable.
-
-## Example
-
--- TBD
- 
+0.weavedConnectd.mips-openwrt-plug : built 7/18/2015 : Target the Weaved Plug, Barrier Breaker RT5350, includes notificaiton
+built with toolchain-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2, Static Linked

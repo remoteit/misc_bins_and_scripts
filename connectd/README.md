@@ -19,4 +19,4 @@ built with toolchain-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2, Static Lin
 
 - weavedConnectd.ubuntu12.04-linux64 : built 7/18/2015 : Target intel 64 bit ubuntu 12.04, includes notification, dynamic linked
 
-- weavedConnectd.linux : built 7/18/2015 : Target intel 32 bit , compliled on debien etch, should run on 99% of linux distros, includes notification, dynamic linked
+- weavedConnectd.linux : built 7/18/2015 : Target intel 32 bit , compliled on debian etch, should run on 99% of linux distros, includes notification, dynamic linked

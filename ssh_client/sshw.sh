@@ -44,7 +44,7 @@ SAVE_AUTH=1
 USE_AUTHHASH=0
 #
 #
-apiMethod="http://"
+apiMethod="https://"
 apiVersion="/v17"
 apiServer="api.weaved.com"
 apiKey="WeavedDemoKey\$2015"

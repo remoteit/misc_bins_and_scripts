@@ -18,9 +18,11 @@
 # include shell script lib, must be in path or specify path here
 source lib.sh
 
+#set -x
+
 #### Settings #####
-VERSION=0.0.7
-MODIFIED="Sept 16, 2015"
+VERSION=0.0.8
+MODIFIED="Nov 05, 2015"
 #
 # Config Dir
 #
@@ -39,13 +41,14 @@ EXE=weavedConnectd
 #
 SAVE_AUTH=1
 #
-# use/store authhash instead of password
+# use/store authhash instead of password (recommended)
 #
-USE_AUTHHASH=0
+USE_AUTHHASH=1
+authtype=0 
 #
 #
 apiMethod="https://"
-apiVersion="/v17"
+apiVersion=""
 apiServer="api.weaved.com"
 apiKey="WeavedDemoKey\$2015"
 startPort=33000
@@ -65,10 +68,12 @@ VERBOSE=0
 DEBUG=0
 PID=0;
 TIMEIT=0
+FAILTIME=10
 #
 # API URL's
 #
-loginURL="${apiMethod}${apiServer}${apiVersion}/api/user/login"
+loginURLpw="${apiMethod}${apiServer}${apiVersion}/api/user/login"
+loginURLhash="${apiMethod}${apiServer}${apiVersion}/api/user/login/authhash"
 logoutURL="${apiMethod}${apiServer}${apiVersion}/api/user/logout"
 deviceListURL="${apiMethod}${apiServer}${apiVersion}/api/device/list/all"
 ##### End Settings #####
@@ -159,6 +164,19 @@ EOF
 #
 printf "\n%s\n\n\n" "$man_text"
 }
+
+#
+# Print Usage
+#
+usage()
+{
+        echo "Usage: $0 [-v (verbose)] [-v (maximum verbosity)] [-l(ist devices only)] [-c(leanup)] [-r(eset to default)] [-m(an page)] [-h (this message)] [user@]<devicename> [passed on to ssh]" >&2
+        echo "     [optional] must specify device name." >&2
+        echo "Version $VERSION Build $MODIFIED" >&2
+        exit 1 
+}
+
+
 #
 # cleanup files that could affect normal operation if things went wrong
 #
@@ -270,7 +288,7 @@ next_port()
 
 }
 #
-# check_auth_cache, one line auth file
+# check_auth_cache, one line auth file, type is set to 0 for password and 1 for authash
 # 
 # Returns $username $password $type on success
 #
@@ -284,7 +302,10 @@ check_auth_cache()
         username=${line%%"|"*}
         password=${line##*"|"}
         t=${line#*"|"}
-        type=${t%%"|"*}
+        authtype=${t%%"|"*}
+        if [ $authtype -eq 1 ]; then
+            ahash=$password
+        fi
         return 1
     fi
     return 0
@@ -393,11 +414,18 @@ getUserAndPassword() #get weaved user and password interactivly from user
         printf "Please enter your Weaved username (email address): \n"
         read username
     fi
-    if [ "$PASSWD" != "" ]; then
-        password="$PASSWD"
-    else
-        printf "\nNow, please enter your password: \n"
-        read  -s password
+
+    if [ "$AHASH" != "" ]; then
+        authtype=1
+        ahash="$AHASH"
+    else    
+
+        if [ "$PASSWD" != "" ]; then
+            password="$PASSWD"
+        else
+            printf "\nNow, please enter your password: \n"
+            read  -s password
+        fi
     fi
 }
 
@@ -408,8 +436,13 @@ getUserAndPassword() #get weaved user and password interactivly from user
 userLogin () #Portal login function
 {
     printf "Connecting...\n"
-    resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:${apiKey}" "$loginURL/$username/$password")
-   
+    
+    if [ $authtype -eq 1 ]; then
+        resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:${apiKey}" "$loginURLhash/$username/$ahash")
+    else
+        resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:${apiKey}" "$loginURLpw/$username/$password")
+    fi
+
     status=$(jsonval "$(echo -n "$resp")" "status")
 
     login404=$(echo "$resp" | grep "404 Not Found" | sed 's/"//g')
@@ -548,17 +581,18 @@ while getopts lvhmcr OPT; do
         VERBOSE=$((VERBOSE+1)) ;;
       h | [?])
         # got invalid option
-        echo "Usage: $0 [-v (verbose)] [-v (maximum verbosity)] [-l(ist devices only)] [-c(leanup)] [-r(eset to default)] [-m(an page)] [-h (this message)] [user@]<devicename> [passed on to ssh]" >&2
-        echo "     [optional] must specify device name." >&2
-        echo "Version $VERSION Build $MODIFIED" >&2
-        exit 1 ;;
+        usage
+        ;;
     esac
 done
 
 # get rid of the just-finished flag arguments
 shift $(($OPTIND-1))
 
-#echo $1
+# make sure we have somthing to connect to
+if [ $# -eq 0 ]; then
+    usage
+fi
 
 in=$1
 
@@ -618,7 +652,12 @@ else
             if [ $VERBOSE -gt 0 ]; then
                 echo "Saving Weaved credenials for $username"
             fi
-            echo "${username}|0|${password}" > $AUTH 
+            # Save either pw or hash depending on settings
+            if [ $USE_AUTHHASH -eq 1 ]; then
+                echo "${username}|1|${ahash}" > $AUTH 
+            else
+                echo "${username}|0|${[password}" > $AUTH 
+            fi
         fi      
     fi
 
@@ -721,13 +760,13 @@ else
     # We can use a password or an Auth Hash (auth hash is a salted hashed value )
     # Auth Hash not yet tested
     #
-    if [ $"USE_AUTHHASH" == "1" ]; then
+    if [ $authtype -eq 1 ]; then
         # make the connection
         #$EXE -p "$base_username" "$ahash" "$address" "T$port" 2 127.0.0.1 0.0.0.0 15 0 0 > $CONNECTION_LOG &
         if [ $VERBOSE -gt 1 ]; then
             echo "Issuing command: $EXE -p $base_username $ahash $DEVICE_ADDRESS T$port 2 127.0.0.1 0.0.0.0 15 0 0 > $CONNECTION_LOG &"
         fi
-        $EXE -p $base_username $ahash $DEVICE_ADDRESS T$port 2 127.0.0.1 15 > $CONNECTION_LOG 2>&1 &
+        $EXE -s -p $base_username $ahash $DEVICE_ADDRESS T$port 2 127.0.0.1 0.0.0.0 15 0 0 > $CONNECTION_LOG 2>&1 &
         pid=$!
     else
         base_password=$(echo -n "$password" | base64)

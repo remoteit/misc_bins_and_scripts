@@ -590,7 +590,7 @@ done
 shift $(($OPTIND-1))
 
 # make sure we have somthing to connect to
-if [ $# -eq 0 ]; then
+if [ $# -eq 0 -a "$LIST_ONLY" -ne 1 ]; then
     usage
 fi
 

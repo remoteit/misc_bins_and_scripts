@@ -20,10 +20,12 @@ Currently here are:
  - weavedConnectd.arm.uclib.static:                    ELF 32-bit LSB executable, ARM, version 1, statically linked, stripped
  
  - weavedConnectd.macosx:                              Mach-O executable i386
-weavedConnectd.mipsel-bcm5354.shared:               ELF 32-bit LSB executable, MIPS, MIPS-I version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.2.15, stripped
-weavedConnectd.mipsel-bcm5354.static:               ELF 32-bit LSB executable, MIPS, MIPS-I version 1 (SYSV), statically linked, for GNU/Linux 2.2.15, stripped
-weavedConnectd.mipsel-gcc342.static:                ELF 32-bit LSB executable, MIPS, MIPS-II version 1 (SYSV), statically linked, stripped
-weavedConnectd.mipsel-gcc342.uclib.shared:          ELF 32-bit LSB executable, MIPS, MIPS-II version 1 (SYSV), dynamically linked (uses shared libs), stripped
+
+ - weavedConnectd.mipsel-bcm5354.shared:               ELF 32-bit LSB executable, MIPS, MIPS-I version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.2.15, stripped
+
+ - weavedConnectd.mipsel-bcm5354.static:               ELF 32-bit LSB executable, MIPS, MIPS-I version 1 (SYSV), statically linked, for GNU/Linux 2.2.15, stripped
+ - weavedConnectd.mipsel-gcc342.static:                ELF 32-bit LSB executable, MIPS, MIPS-II version 1 (SYSV), statically linked, stripped
+ - weavedConnectd.mipsel-gcc342.uclib.shared:          ELF 32-bit LSB executable, MIPS, MIPS-II version 1 (SYSV), dynamically linked (uses shared libs), stripped
 weavedConnectd.mipsel-liaro-uClibc-0.9.33.2.shared: ELF 32-bit LSB executable, MIPS, MIPS32 rel2 version 1 (SYSV), dynamically linked (uses shared libs), with unknown capability 0xf41 = 0x756e6700, with unknown capability 0x70100 = 0x3040000, stripped
 weavedConnectd.mipsel-liaro-uClibc-0.9.33.2.static: ELF 32-bit LSB executable, MIPS, MIPS32 rel2 version 1 (SYSV), statically linked, with unknown capability 0xf41 = 0x756e6700, with unknown capability 0x70100 = 0x3040000, stripped
 weavedConnectd.montavista-arm:                      ELF 32-bit LSB executable, ARM, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.4.17, stripped

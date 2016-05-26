@@ -32,9 +32,11 @@ apiVersion="/v21"
 apiServer="api.weaved.com"
 apiKey="WeavedDemoKey$2015"
 # for production, remove these and ask the user at the begnning of the session
-userName = "faultline1989@yahoo.com"
-password = "weaved2012"
+userName = ""
+password = ""
 deviceName=""
+# substitute the name of the actual daemon you are using.
+# this will depend on CPU architecture and OS details
 clientDaemon = "/usr/bin/weavedConnectd.linux"
 
 

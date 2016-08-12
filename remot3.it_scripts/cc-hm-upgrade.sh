@@ -18,6 +18,8 @@ deviceURL=https://$server.weaved.com/$version/api/device
 deviceHWIDURL=https://$server.weaved.com/$version/api/developer/device/hardwareid
 regdeviceURL=https://$server.weaved.com/$version/api/device/register
 #===============================================================
+TMP_DIR=/tmp
+APIKEY="WeavedDeveloperToolsWy98ayxR"
 
 ####### SignInAPI ###################
 signInAPI()

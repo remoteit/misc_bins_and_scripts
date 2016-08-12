@@ -85,7 +85,7 @@ cp /usr/share/weavedconnectd/conf/* enablements
 
 # log in
 
-signinAPI
+signInAPI
 logger "Weaved token=$token"
 
 exit

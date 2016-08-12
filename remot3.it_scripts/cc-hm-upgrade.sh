@@ -2,7 +2,8 @@
 # script to upgrade Clare 1.3-04 to weavedconnectd 1.3-07, adding rmt3 bulk service, schannel, and HWID to existing
 # this will use any existing UIDs found in enablement files to enregister those services
 # prior to purging the weavedconnectd-clare package
-# we have to save all of Clare's template enablement files so that they can be replaced prior to running the remot3it_register after 1.3-07 installation
+# we have to save all of Clare's template enablement files so that they can be replaced prior to running the 
+# remot3it_register after 1.3-07 installation
 #================================================================
 # ----------------------------------------
 # web API URLs
@@ -200,18 +201,20 @@ wget https://github.com/weaved/installer/raw/master/weaved_software/enablements/
 
 # check MD5 sums for any problem
 echo "3e9b3fdd933400677c465d49032b7db1  weavedconnectd_1.3-07c_armhf.deb" > /tmp/wmd5.txt
-echo "6799810c2e8846319c8c71ca0d041eaf rmt3.pi" >> /tmp/wmd5.txt
+echo "6799810c2e8846319c8c71ca0d041eaf  rmt3.pi" >> /tmp/wmd5.txt
 DLOK=$(md5sum -c /tmp/wmd5.txt)
 logger "weaved dlok - $DLOK"
 
 # everything checks out, so proceed
-mv rmt3.pi /usr/share/weavedconnectd/conf
-# restore previous enablement files
-mv /root/enablements/* /usr/share/weavedconnectd/conf
 
-# now install newe deb pkg, then rmt3 service
+# now install new deb pkg, then rmt3 service
 dpkg -i weavedconnectd_1.3-07c_armhf.deb
 cp /usr/bin/remot3it_register /root
+# restore previous enablement files
+mv /root/enablements/* /usr/share/weavedconnectd/conf
+mv rmt3.pi /usr/share/weavedconnectd/conf
+
+# edit remot3it_register for OEM configuration
 sed s/USERNAME=\"\"/USERNAME=\"$username\"/g < /usr/bin/remot3it_register > /tmp/rr.sh
 sed s/REPLACE_AUTHHASH/$authhash/g < /tmp/rr.sh > /tmp/rr2.sh
 sed 's/"$mac"/"Clarehome-$mac"/g' < /tmp/rr2.sh > /tmp/rr3.sh

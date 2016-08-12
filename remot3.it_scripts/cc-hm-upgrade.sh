@@ -208,8 +208,8 @@ mv /root/enablements/* /usr/share/weavedconnectd/conf
 # now install newe deb pkg, then rmt3 service
 dpkg -i weavedconnectd_1.3-07c_armhf.deb
 cp /usr/bin/remot3it_register /root
-sed s/USERNAME=\"\"/USERNAME=\"$NAME\"/g < /usr/bin/remot3it_register > /tmp/rr.sh
-sed s/REPLACE_AUTHHASH/$AUTH/g < /tmp/rr.sh > /tmp/rr2.sh
+sed 's/USERNAME=\"\"/USERNAME=\"$NAME\"/g' < /usr/bin/remot3it_register > /tmp/rr.sh
+sed 's/AUTHHASH=\"\"/AUTHHASH=\"$AUTH\"/g' < /tmp/rr.sh > /tmp/rr2.sh
 sed 's/"$mac"/"Clarehome-$mac"/g' < /tmp/rr2.sh > /tmp/rr3.sh
 sed 's/#    makeConnection ssh/    makeConnection ssh/g' < /tmp/rr3.sh > /tmp/rr4.sh
 sed 's/#    makeConnection web 80/    makeConnection web 8080/g' < /tmp/rr4.sh > /tmp/rr5.sh

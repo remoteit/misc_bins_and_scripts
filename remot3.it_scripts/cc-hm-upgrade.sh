@@ -19,6 +19,7 @@ deviceHWIDURL=https://$server.weaved.com/$version/api/developer/device/hardwarei
 regdeviceURL=https://$server.weaved.com/$version/api/device/register
 #===============================================================
 TMP_DIR=/tmp
+BIN_DIR=/usr/bin
 APIKEY="WeavedDeveloperToolsWy98ayxR"
 
 ####### SignInAPI ###################
@@ -72,6 +73,72 @@ testLogin()
 }
 ######### End Test Login #########
 
+######### Remove matching line from root crontab ######
+cronRemoveLine()
+{
+    crontab -l | grep -v "$1" | cat > $TMP_DIR/.crontmp
+    crontab $TMP_DIR/.crontmp
+}
+
+######### Disable Weaved services to start at reboot time ######
+disableStartup()
+{
+    cronRemoveLine "@reboot $BIN_DIR/$STARTEMUP"
+}
+######### End Disable Weaved services to start at reboot time ######
+
+
+##### Delete All Connections
+deleteAllConnections()
+{
+    if [ 1 ]; then
+
+    # now iterate through all enablement files to find it
+    # stop all daemons.  
+
+    	for file in $WEAVED_DIR/*.conf; do
+	# get service name from UID
+            uid="$(grep '^UID' $file | awk '{print $2}')"
+	    resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:$APIKEY"  -H "token:$token" "$deviceURL/$uid")
+            serviceName=$(jsonval "$resp" "name")
+
+	    logger "weaved: upgrade Deleting $serviceName..."
+	
+	    result=$(curl -s $deleteURL -X 'POST' -d "{\"deviceaddress\":\"$uid\"}" -H “Content-Type:application/json” -H "apikey:$APIKEY" -H "token:$token" &> /dev/null)
+	    deleteResult=$(jsonval "$result" "status")
+#	    debug $deleteResult
+
+	    fileNameRoot=$(echo $file |xargs basename | awk -F "." {'print $1'})
+#		    echo $fileNameRoot
+ 	    # if daemon pid exists, stop daemon and remove start/stop script
+ 	    if [ -f $PID_DIR/$fileNameRoot.pid ]; then
+ 	        if [ -f $BIN_DIR/$fileNameRoot.sh ]; then
+ 		    $BIN_DIR/$fileNameRoot.sh stop -q
+ 		    rm $BIN_DIR/$fileNameRoot.sh
+		fi
+	    fi
+	    if [ -f $file ]; then
+		rm $file
+	    fi
+	    if [ -f $BIN_DIR/notify_$fileNameRoot.sh ]; then
+		rm $BIN_DIR/notify_$fileNameRoot.sh
+   	    fi
+        done
+        if [ -f $BIN_DIR/$STARTEMUP ]; then
+	    rm $BIN_DIR/$STARTEMUP
+   	fi
+# also should clear out crontab at this point
+	disableStartup
+# remove serial.txt
+        if [ -f $SERIALNUMBERFILE ]; then
+	    rm $SERIALNUMBERFILE
+   	fi
+    fi
+    exit
+}
+
+##### End of Delete All Connections
+
 #----------------------------------------------------------
 # JSON parse (very simplistic):  get value frome key $2 in buffer $1,  values or keys must not have the characters {}[", 
 #   and the key must not have : in it
@@ -109,10 +176,10 @@ cp /usr/share/weavedconnectd/conf/* enablements
 signInAPI
 logger "Weaved token=$token"
 
-exit
-
 # now iterate through installed enablement files and remove any services with a UID and password already
+deleteAllConnections
 
+exit
 
 # next purge the weavedconnectd-clare package
 dpkg --purge weavedconnectd-clare

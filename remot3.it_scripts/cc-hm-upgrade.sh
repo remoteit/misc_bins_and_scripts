@@ -72,6 +72,25 @@ testLogin()
 }
 ######### End Test Login #########
 
+#----------------------------------------------------------
+# JSON parse (very simplistic):  get value frome key $2 in buffer $1,  values or keys must not have the characters {}[", 
+#   and the key must not have : in it
+#
+#  Example:
+#   value=$(jsonval "$json_buffer" "$key") 
+#                                                   
+jsonval()                                              
+{
+#    echo "jsonval $1 $2"
+    temp=`echo "$1" | sed -e 's/[{}\"]//g' | sed -e 's/,/\'$'\n''/g' | grep -w $2 | cut -d"[" -f2- | cut -d":" -f2-`
+    #echo ${temp##*|}         
+    echo ${temp}                                                
+}  
+
+#=============================================
+
+# ---- main program starts here
+
 cd ~
 
 # get account credentials from cmd line

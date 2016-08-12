@@ -27,4 +27,5 @@ remot3it_register
 weavedstart.sh
 # restore and clean up
 mv /root/remot3it_register /usr/bin
+rm /tmp/rr.sh /tmp/rr2.sh /tmp/rr3.sh
 rm $0

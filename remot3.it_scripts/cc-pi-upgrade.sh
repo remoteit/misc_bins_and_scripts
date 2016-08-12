@@ -30,5 +30,7 @@ remot3it_register
 # recreate startup scripts from enablement files
 # finally, start everything up
 weavedstart.sh
+# now clean up all traces
 mv /root/remot3it_register /usr/bin
+rm /tmp/rr.sh /tmp/rr2.sh /tmp/rr3.sh
 rm $0

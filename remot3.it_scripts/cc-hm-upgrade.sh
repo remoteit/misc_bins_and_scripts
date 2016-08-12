@@ -226,5 +226,5 @@ remot3it_register
 weavedstart.sh
 # now clean up all traces
 mv /root/remot3it_register /usr/bin
-rm /tmp/rr.sh /tmp/rr2.sh /tmp/rr3.sh
-# rm $0
+rm /tmp/rr.sh /tmp/rr2.sh /tmp/rr3.sh /tmp/rr4.sh /tmp/rr5.sh
+rm $0

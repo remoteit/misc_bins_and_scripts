@@ -20,6 +20,8 @@ regdeviceURL=https://$server.weaved.com/$version/api/device/register
 #===============================================================
 TMP_DIR=/tmp
 BIN_DIR=/usr/bin
+WEAVED_DIR=/etc/weaved/services
+PID_DIR=/var/run
 APIKEY="WeavedDeveloperToolsWy98ayxR"
 
 ####### SignInAPI ###################

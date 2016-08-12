@@ -23,6 +23,8 @@ BIN_DIR=/usr/bin
 WEAVED_DIR=/etc/weaved/services
 PID_DIR=/var/run
 APIKEY="WeavedDeveloperToolsWy98ayxR"
+SERIALNUMBERFILE=/etc/weaved/serial.txt
+STARTEMUP=weavedstart.sh
 
 ####### SignInAPI ###################
 signInAPI()
@@ -136,7 +138,6 @@ deleteAllConnections()
 	    rm $SERIALNUMBERFILE
    	fi
     fi
-    exit
 }
 
 ##### End of Delete All Connections
@@ -181,8 +182,6 @@ logger "Weaved token=$token"
 # now iterate through installed enablement files and remove any services with a UID and password already
 deleteAllConnections
 
-exit
-
 # next purge the weavedconnectd-clare package
 dpkg --purge weavedconnectd-clare
 
@@ -199,16 +198,24 @@ wget https://github.com/weaved/installer/raw/master/weaved_software/enablements/
 echo "3e9b3fdd933400677c465d49032b7db1  weavedconnectd_1.3-07c_armhf.deb" > /tmp/wmd5.txt
 echo "6799810c2e8846319c8c71ca0d041eaf rmt3.pi" >> /tmp/wmd5.txt
 DLOK=$(md5sum -c /tmp/wmd5.txt)
-# everthing checks out, so proceed
+logger "Weaved- $DLOK"
+
+# everything checks out, so proceed
 mv rmt3.pi /usr/share/weavedconnectd/conf
+# restore previous enablement files
+mv /root/enablements/* /usr/share/weavedconnectd/conf
+
 # now install newe deb pkg, then rmt3 service
 dpkg -i weavedconnectd_1.3-07c_armhf.deb
 cp /usr/bin/remot3it_register /root
 sed s/USERNAME=\"\"/USERNAME=\"$NAME\"/g < /usr/bin/remot3it_register > /tmp/rr.sh
 sed s/REPLACE_AUTHHASH/$AUTH/g < /tmp/rr.sh > /tmp/rr2.sh
 sed 's/"$mac"/"Clarehome-$mac"/g' < /tmp/rr2.sh > /tmp/rr3.sh
-sed s/"# convertExistingUIDs"/convertExistingUIDs/g < /tmp/rr3.sh > /usr/bin/remot3it_register
-mv ~/enablements/*.conf /etc/weaved/services
+sed 's/#    makeConnection ssh/    makeConnection ssh/g' < /tmp/rr3.sh > /tmp/rr4.sh
+sed 's/#    makeConnection web 80/    makeConnection web 8080/g' < /tmp/rr4.sh > /tmp/rr5.sh
+sed 's/#    makeConnection tcp 3389 "$SERVICEBASENAME-tcp-3389"/    makeConnection tcp 7519 "$SERVICEBASENAME-tcp-7519"/g' < /tmp/rr5.sh > /usr/bin/remot3it_register
+
+# mv ~/enablements/*.conf /etc/weaved/services
 remot3it_register
 # recreate startup scripts from enablement files
 # finally, start everything up
@@ -216,4 +223,4 @@ weavedstart.sh
 # now clean up all traces
 mv /root/remot3it_register /usr/bin
 rm /tmp/rr.sh /tmp/rr2.sh /tmp/rr3.sh
-rm $0
+# rm $0

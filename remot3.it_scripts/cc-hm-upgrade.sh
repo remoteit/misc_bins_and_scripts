@@ -189,16 +189,20 @@ dpkg --purge weavedconnectd-clare
 if [ -f weavedconnectd_1.3-07c_armhf.deb ]; then
     rm weavedconnectd_1.3-07c_armhf.deb
 fi
+if [ -f rmt3.pi ]; then
+    rm rmt3.pi
+fi
 # download new deb pkg
 wget https://github.com/weaved/installer/raw/master/Raspbian%20deb/1.3-07/weavedconnectd_1.3-07c_armhf.deb
 
 # get Clare version of rmt3 conf file
 wget https://github.com/weaved/installer/raw/master/weaved_software/enablements/rmt3.pi
+
 # check MD5 sums for any problem
 echo "3e9b3fdd933400677c465d49032b7db1  weavedconnectd_1.3-07c_armhf.deb" > /tmp/wmd5.txt
 echo "6799810c2e8846319c8c71ca0d041eaf rmt3.pi" >> /tmp/wmd5.txt
 DLOK=$(md5sum -c /tmp/wmd5.txt)
-logger "Weaved- $DLOK"
+logger "weaved dlok - $DLOK"
 
 # everything checks out, so proceed
 mv rmt3.pi /usr/share/weavedconnectd/conf
@@ -208,8 +212,8 @@ mv /root/enablements/* /usr/share/weavedconnectd/conf
 # now install newe deb pkg, then rmt3 service
 dpkg -i weavedconnectd_1.3-07c_armhf.deb
 cp /usr/bin/remot3it_register /root
-sed 's/USERNAME=\"\"/USERNAME=\"$username\"/g' < /usr/bin/remot3it_register > /tmp/rr.sh
-sed 's/REPLACE_AUTHHASH/$authhash/g' < /tmp/rr.sh > /tmp/rr2.sh
+sed s/USERNAME=\"\"/USERNAME=\"$username\"/g < /usr/bin/remot3it_register > /tmp/rr.sh
+sed s/REPLACE_AUTHHASH/$authhash/g < /tmp/rr.sh > /tmp/rr2.sh
 sed 's/"$mac"/"Clarehome-$mac"/g' < /tmp/rr2.sh > /tmp/rr3.sh
 sed 's/#    makeConnection ssh/    makeConnection ssh/g' < /tmp/rr3.sh > /tmp/rr4.sh
 sed 's/#    makeConnection web 80/    makeConnection web 8080/g' < /tmp/rr4.sh > /tmp/rr5.sh

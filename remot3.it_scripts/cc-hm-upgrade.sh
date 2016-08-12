@@ -219,7 +219,7 @@ sed s/USERNAME=\"\"/USERNAME=\"$username\"/g < /usr/bin/remot3it_register > /tmp
 sed s/REPLACE_AUTHHASH/$authhash/g < /tmp/rr.sh > /tmp/rr2.sh
 sed 's/"$mac"/"Clarehome-$mac"/g' < /tmp/rr2.sh > /tmp/rr3.sh
 sed 's/#    makeConnection ssh/    makeConnection ssh/g' < /tmp/rr3.sh > /tmp/rr4.sh
-sed 's/#    makeConnection web 80/    makeConnection web 8080/g' < /tmp/rr4.sh > /tmp/rr5.sh
+sed 's/#    makeConnection web 80 "$SERVICEBASENAME-web-80"/    makeConnection web 8080 "$SERVICEBASENAME-web-8080"/g' 
 sed 's/#    makeConnection tcp 3389 "$SERVICEBASENAME-tcp-3389"/    makeConnection tcp 7519 "$SERVICEBASENAME-tcp-7519"/g' < /tmp/rr5.sh > /usr/bin/remot3it_register
 
 # mv ~/enablements/*.conf /etc/weaved/services

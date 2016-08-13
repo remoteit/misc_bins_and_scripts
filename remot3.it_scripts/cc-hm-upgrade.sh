@@ -202,8 +202,12 @@ wget https://github.com/weaved/installer/raw/master/weaved_software/enablements/
 # check MD5 sums for any problem
 echo "3e9b3fdd933400677c465d49032b7db1  weavedconnectd_1.3-07c_armhf.deb" > /tmp/wmd5.txt
 echo "6799810c2e8846319c8c71ca0d041eaf  rmt3.pi" >> /tmp/wmd5.txt
-DLOK=$(md5sum -c /tmp/wmd5.txt)
-logger "weaved dlok - $DLOK"
+DLOK=$(md5sum -c /tmp/wmd5.txt | grep "OK" | wc | awk '{ print $1 }')
+
+if [ $DLOK -ne 2 ]; then
+	logger "weaved download md5sum error"
+ 	exit
+fi
 
 # everything checks out, so proceed
 
@@ -219,15 +223,15 @@ sed s/USERNAME=\"\"/USERNAME=\"$username\"/g < /usr/bin/remot3it_register > /tmp
 sed s/REPLACE_AUTHHASH/$authhash/g < /tmp/rr.sh > /tmp/rr2.sh
 sed 's/"$mac"/"Clarehome-$mac"/g' < /tmp/rr2.sh > /tmp/rr3.sh
 sed 's/#    makeConnection ssh/    makeConnection ssh/g' < /tmp/rr3.sh > /tmp/rr4.sh
-sed 's/#    makeConnection web 80 "$SERVICEBASENAME-web-80"/    makeConnection web 8080 "$SERVICEBASENAME-web-8080"/g' 
-sed 's/#    makeConnection tcp 3389 "$SERVICEBASENAME-tcp-3389"/    makeConnection tcp 7519 "$SERVICEBASENAME-tcp-7519"/g' < /tmp/rr5.sh > /usr/bin/remot3it_register
+sed 's/#    makeConnection web 80 "$SERVICEBASENAME-web-80"/makeConnection web 8080 "$SERVICEBASENAME-web-8080"/g' < /tmp/rr4.sh > /tmp/rr5.sh
+sed 's/#    makeConnection tcp 3389 "$SERVICEBASENAME-tcp-3389"/makeConnection tcp 7519 "$SERVICEBASENAME-tcp-7519"/g' < /tmp/rr5.sh > /usr/bin/remot3it_register
 
-# mv ~/enablements/*.conf /etc/weaved/services
+# now run the installer script
 remot3it_register
 # recreate startup scripts from enablement files
 # finally, start everything up
 weavedstart.sh
 # now clean up all traces
 mv /root/remot3it_register /usr/bin
-rm /tmp/rr.sh /tmp/rr2.sh /tmp/rr3.sh /tmp/rr4.sh /tmp/rr5.sh
-rm $0
+# rm /tmp/rr.sh /tmp/rr2.sh /tmp/rr3.sh /tmp/rr4.sh /tmp/rr5.sh
+# rm $0

@@ -6,9 +6,13 @@ If none of these run, let us know and we will help you build it for your platfor
 Currently here are:
 
 weavedConnectd.exe                                  PE32 executable (console) Intel 80386, for MS Windows
+
 weavedConnectd.arm-gnueabi-shared:                  ELF 32-bit LSB executable, ARM, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.16, stripped
+
 weavedConnectd.arm-gnueabi-shared.2012:             ELF 32-bit LSB executable, ARM, version 1 (SYSV), dynamically linked (uses shared libs), stripped
+
 weavedConnectd.arm-gnueabi-static:                  ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, for GNU/Linux 2.6.16, stripped
+
 weavedConnectd.arm-gnueabi-static.2012:             ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, stripped
 weavedConnectd.arm-linaro.static:                   ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, for GNU/Linux 2.6.26, BuildID[sha1]=0xf2dd4969e68782e84c4947b6e3f819afce282686, stripped
 weavedConnectd.arm.uclib.shared:                    ELF 32-bit LSB executable, ARM, version 1, dynamically linked (uses shared libs), stripped

@@ -187,20 +187,20 @@ deleteAllConnections
 dpkg --purge weavedconnectd-clare
 
 # remove any existing file, download from github
-if [ -f weavedconnectd_1.3-07c_armhf.deb ]; then
-    rm weavedconnectd_1.3-07c_armhf.deb
+if [ -f weavedconnectd_1.3-07u_armhf.deb ]; then
+    rm weavedconnectd_1.3-07u_armhf.deb
 fi
 if [ -f rmt3.pi ]; then
     rm rmt3.pi
 fi
 # download new deb pkg
-wget https://github.com/weaved/installer/raw/master/Raspbian%20deb/1.3-07/weavedconnectd_1.3-07c_armhf.deb
+wget https://github.com/weaved/installer/raw/master/Raspbian%20deb/1.3-07/weavedconnectd_1.3-07u_armhf.deb
 
 # get Clare version of rmt3 conf file
 wget https://github.com/weaved/installer/raw/master/weaved_software/enablements/rmt3.pi
 
 # check MD5 sums for any problem
-echo "3e9b3fdd933400677c465d49032b7db1  weavedconnectd_1.3-07c_armhf.deb" > /tmp/wmd5.txt
+echo "0461cc5b31bce721a5dfd824160abafd  weavedconnectd_1.3-07u_armhf.deb" > /tmp/wmd5.txt
 echo "6799810c2e8846319c8c71ca0d041eaf  rmt3.pi" >> /tmp/wmd5.txt
 DLOK=$(md5sum -c /tmp/wmd5.txt | grep "OK" | wc | awk '{ print $1 }')
 
@@ -212,7 +212,7 @@ fi
 # everything checks out, so proceed
 
 # now install new deb pkg, then rmt3 service
-dpkg -i weavedconnectd_1.3-07c_armhf.deb
+dpkg -i weavedconnectd_1.3-07u_armhf.deb
 cp /usr/bin/remot3it_register /root
 # restore previous enablement files
 mv /root/enablements/* /usr/share/weavedconnectd/conf

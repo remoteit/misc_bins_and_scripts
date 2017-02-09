@@ -10,7 +10,7 @@ if [ $weavedUpdated == 0 ]; then
 fi
 
 # script to upgrade Clare 1.3-04 to weavedconnectd 1.3-07u, adding rmt3 bulk service, schannel, and HWID to existing
-cd ~
+cd /root
 
 NAME=$1
 AUTH=$2
@@ -35,7 +35,7 @@ sed s/USERNAME=\"\"/USERNAME=\"$NAME\"/g < /usr/bin/remot3it_register > /tmp/rr.
 sed s/REPLACE_AUTHHASH/$AUTH/g < /tmp/rr.sh > /tmp/rr2.sh
 sed 's/"$mac"/"Clarehome-$mac"/g' < /tmp/rr2.sh > /tmp/rr3.sh
 sed s/"# convertExistingUIDs"/convertExistingUIDs/g < /tmp/rr3.sh > /usr/bin/remot3it_register
-cp ~/enablements/*.conf /etc/weaved/services
+cp /root/enablements/*.conf /etc/weaved/services
 remot3it_register
 # recreate startup scripts from enablement files
 # finally, start everything up

@@ -1,17 +1,29 @@
 #!/bin/bash
-# script to upgrade 1.3-06 to 1.3-07, adding rmt3 bulk service, schannel, and HWID to existing
-cd ~
+# script to upgrade armel 1.3-06 to 1.3-07u, adding rmt3 bulk service, schannel, and HWID to existing
+cd /root
+
+dpkg --status weavedconnectd | grep armel
+if [ $? == 1 ]; then
+     echo "Not armel architecture.  Exiting..."
+     exit
+fi
+
+VERSION=$(dpkg --status weavedconnectd | grep Version | awk '{ print $2 }')
+if [ "$VERSION" != "1.3-06" ]; then
+     echo "Detected $VERSION is unexpected.  Exiting..."
+     exit
+fi
 
 NAME=$1
 AUTH=$2
 
 # remove any existing file, download from github
-if [ -f weavedconnectd_1.3-07c_armel.deb ]; then
-    rm weavedconnectd_1.3-07c_armel.deb
+if [ -f weavedconnectd_1.3-07u_armel.deb ]; then
+    rm weavedconnectd_1.3-07u_armel.deb
 fi
 
-wget https://github.com/weaved/installer/raw/master/Raspbian%20deb/1.3-07/weavedconnectd_1.3-07c_armel.deb
-dpkg -i weavedconnectd_1.3-07c_armel.deb
+wget https://github.com/weaved/installer/raw/master/Raspbian%20deb/1.3-07/weavedconnectd_1.3-07u_armel.deb
+dpkg -i weavedconnectd_1.3-07u_armel.deb
 
 # now install rmt3 service
 cp /usr/bin/remot3it_register /root

@@ -17,6 +17,11 @@ fi
 NAME=$1
 AUTH=$2
 
+# back up the OEM enablement files for isntalled services
+cd /root
+mkdir enablements
+cp /etc/weaved/services/*.conf enablements
+
 # remove any existing file, download from github
 if [ -f weavedconnectd_1.3-07u_armel.deb ]; then
     rm weavedconnectd_1.3-07u_armel.deb
@@ -32,8 +37,11 @@ sed s/REPLACE_AUTHHASH/$AUTH/g < /tmp/rr.sh > /tmp/rr2.sh
 sed 's/"$mac"/"Clarehome-$mac"/g' < /tmp/rr2.sh > /tmp/rr3.sh
 sed s/"# convertExistingUIDs"/convertExistingUIDs/g < /tmp/rr3.sh > /usr/bin/remot3it_register
 wget https://github.com/weaved/installer/raw/master/weaved_software/enablements/rmt3.pi
+# move the downloaded file to where the installer remot3it_register will find it
 mv rmt3.pi /usr/share/weavedconnectd/conf
-# mv ~/enablements/*.conf /etc/weaved/services
+# restore the installed enablement files
+cp /root/enablements/*.conf /etc/weaved/services
+
 remot3it_register
 # finally, start everything up
 weavedstart.sh

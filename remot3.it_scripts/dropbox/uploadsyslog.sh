@@ -4,7 +4,7 @@ TOOL_DIR="/usr/bin"
 #if you need to update status in log running process use the following (not more than once every 30 seconds)
 #task_notify.sh 1 $1 "Job at stage x"
 
-# Clear all status columns A-E in remot3.it portal
+# Clear status column A in remot3.it portal
 
 ret=$(${TOOL_DIR}/task_notify.sh a $1 $2 "")
 #===========================================================
@@ -30,6 +30,7 @@ if [ ! $? ]; then
     ret=$(${TOOL_DIR}/task_notify.sh 2 $1 $2 "Upload failed.")
 else
     echo "Success uploading logfile" >> "$logfile"
+    ${TOOL_DIR}/task_notify.sh a $1 $2 "Upload succeeded."
     ret=$(${TOOL_DIR}/task_notify.sh 1 $1 $2 "Upload succeeded.")
     ./dropbox_uploader.sh  list "/$da"  >> "$logfile"
 fi

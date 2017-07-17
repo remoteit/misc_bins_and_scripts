@@ -8,7 +8,7 @@ TOOL_DIR="/usr/bin"
 
 ret=$(${TOOL_DIR}/task_notify.sh a $1 $2 "")
 #===========================================================
-logfile="/tmp/$0.log"
+logfile=/tmp/"$0".log
 HOMEDIR="/home/pi"
 
 da=$(date -I | sed s/"\s"/"_"/g)

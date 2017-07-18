@@ -29,3 +29,4 @@ fi
 
 echo "$name" > /home/pi/.remot3.it/devicename
 ret=$(${TOOL_DIR}/task_notify.sh a $1 $2 "$name")
+ret=$(${TOOL_DIR}/task_notify.sh 1 $1 $2 "Set name succeeded.")

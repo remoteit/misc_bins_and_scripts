@@ -9,6 +9,7 @@ logfilename="$0".log
 
 cd /home/pi
 git clone https://github.com/andreafabrizi/Dropbox-Uploader.git
+dropbox_api_token=""
 
 ################################################
 # parse the flag options (and their arguments) #

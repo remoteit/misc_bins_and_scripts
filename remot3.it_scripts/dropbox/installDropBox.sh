@@ -1,7 +1,8 @@
 #!/bin/bash
 # r3_header, -s (Enter DropBox API token)
-# clear status column A in remot3.it portal
+TOOL_DIR="/usr/bin"
 
+# clear status column A in remot3.it portal
 ret=$(${TOOL_DIR}/task_notify.sh a $1 $2 "")
 #=================================================
 logfilename="$0".log
@@ -48,7 +49,8 @@ cd Dropbox-Uploader
 echo "$dropbox_api_token" > db_installer.tmp
 echo "y" >> db_installer.tmp
 
-./dropbox-uploader.sh < db_installer.tmp
+./dropbox_uploader.sh < db_installer.tmp
+# rm db_installer.tmp
 
 ret=$(${TOOL_DIR}/task_notify.sh a $1 $2 "Done.")
 ret=$(${TOOL_DIR}/task_notify.sh 1 $1 $2 "Done.")

@@ -84,7 +84,7 @@ while getopts f:m:p:l:s: OPT; do
         esac
     done
 
-cd Dropbox-Uploader
+cd /home/pi/Dropbox-Uploader
 echo "$dropbox_api_token" > db_installer.tmp
 echo "y" >> db_installer.tmp
 

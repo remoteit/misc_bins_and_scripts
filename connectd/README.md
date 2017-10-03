@@ -1,5 +1,11 @@
-# Misc Bins
+# Precompiled connectd bins
 Precompiled Bins for differnet OS and Architectures  Version 3.8
+
+# Version 3.8
+ - In version 3.8 we change the binary names to connectd.  
+ - ping time tuning is added for lower idle bandwidth usage.
+
+# Precompiled Bin Description
 
 If none of these run, let us know and we will help you build it for your platform.
 

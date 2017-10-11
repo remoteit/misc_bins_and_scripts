@@ -9,6 +9,8 @@ import sys
 import os
 import getpass
 import errno
+import re
+import string
 
 from socket import error as socket_error
 import socket
@@ -16,28 +18,52 @@ import socket
 homeFolder = "/home/gary"
 
 authcache = True
-authCacheFile="~/.weaved/auth"
+authCacheFile="~/.remot3.it/auth"
 
 portCache = True;
-portCacheFile=homeFolder + "/.weaved/endpoints"
+portCacheFile=homeFolder + "/.remot3.it/endpoints"
 
 sshCache=True;
-sshCacheFile = homeFolder + "/.weaved/ssh"
+sshCacheFile = homeFolder + "/.remot3.it/ssh"
 
-deviceListFile = homeFolder + "/.weaved/devicelist"
-remoteScriptFile = homeFolder + "/.weaved/remotescript"
+# deviceListFile = homeFolder + "/.remot3.it/devicelist"
+# remoteScriptFile = homeFolder + "/.remot3.it/remotescript"
+scriptPath=homeFolder + "/.remot3.it/"
+logFilePath=scriptPath + "/logs/"
 
 apiMethod="http://"
 apiVersion="/v21"
 apiServer="api.weaved.com"
 apiKey="WeavedDemoKey$2015"
+
 # for production, remove these and ask the user at the begnning of the session
-userName = ""
-password = ""
+userName = "faultline1989@yahoo.com"
+password = "weaved$2012"
 deviceName=""
 # substitute the name of the actual daemon you are using.
 # this will depend on CPU architecture and OS details
 clientDaemon = "/usr/bin/weavedConnectd.linux"
+
+#===============================================
+def addName(deviceItem, name):
+    # this file we are creating will be used as input to weavedinstaller to log in and add the Device Name
+    f = open(scriptPath + "addname", "w+")
+    f.write("1\n")
+    f.write(userName + "\n")
+    f.write(password + "\n")
+    f.write(name + "\n")
+    f.write("4\n")
+    f.close()
+    
+    # this file will be the script that uses the previous file
+    f = open(scriptPath + "addnamescript", "w+")
+    f.write("@fileSend " + scriptPath + "addname /tmp/addname\n")
+    f.write("sudo weavedinstaller < /tmp/addname? > /tmp/weavedlog.txt\n")
+    f.write("@sleep 30\n")
+    f.write("@fileGet /tmp/weavedlog.txt -addname.txt\n")
+    f.close()
+    
+    runScript(deviceItem, "addnamescript")
 
 
 #===============================================
@@ -149,9 +175,9 @@ def trySSHConnect(host, portNum):
 #and then check the response...
     try:
         ssh = paramiko.SSHClient()
-        print "1"
+#        print "1"
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        print "2"
+#        print "2"
 # was trying to add banner_timeout because it seems to have that failure
 # occasionally. Couldn't get it working.
 #        ssh.connect(host, port=portNum, username=sshUserName,
@@ -159,15 +185,15 @@ def trySSHConnect(host, portNum):
 #            timeout=3.0, allow_agent=True, look_for_keys=True,
 #            compress=False, sock=None, gss_auth=False, gss_kex=False,
 #            gss_deleg_creds=True, gss_host=None, banner_timeout=5.0)
-        print "hostname = ", host
-        print "port = ", portNum
-        print "sshUsername = ", sshUserName
-        print "sshPassword = ", sshPassword
+#        print "hostname = ", host
+#        print "port = ", portNum
+#        print "sshUsername = ", sshUserName
+#        print "sshPassword = ", sshPassword
 
         ssh.connect(hostname=host, port=portNum, username=sshUserName, password=sshPassword)
-        print "3"
+#        print "3"
         ssh.get_transport().window_size = 3 * 1024 * 1024
-        print "4"
+#        print "4"
     except paramiko.AuthenticationException:
         print "Authentication failed!"
         return -1
@@ -191,10 +217,10 @@ def getSSHCredentials():
     cacheHit = False
     if(os.path.isfile(sshCacheFile)):
         with open(sshCacheFile, 'r') as f:
-            UID = deviceItem["deviceaddress"]
+            alias = deviceItem["devicealias"]
 #            print UID
             for line in f:
-                if(UID in line):
+                if(alias in line):
                     params = line.split("|")
                     sshUserName = params[1]
                     sshPassword = params[2]
@@ -204,20 +230,23 @@ def getSSHCredentials():
                 sshUserName = raw_input("SSH user name:") 
                 sshPassword = raw_input("SSH password:")
                 with open(sshCacheFile, 'a') as f:
-                    f.write(deviceItem["deviceaddress"] + "|" + sshUserName + "|" + sshPassword + "|\n")
+                    f.write(deviceItem["devicealias"] + "|" + sshUserName + "|" + sshPassword + "|\n")
     else:
         sshUserName = raw_input("SSH user name:") 
         sshPassword = raw_input("SSH password:")                  
         with open(sshCacheFile, 'a') as f:
-            f.write(deviceItem["deviceaddress"] + "|" + sshUserName + "|" + sshPassword + "|\n")
+            f.write(deviceItem["devicealias"] + "|" + sshUserName + "|" + sshPassword + "|\n")
     return (sshUserName, sshPassword)
 
 #===============================================
-def remoteScript(ssh):
-    if(os.path.isfile(remoteScriptFile)):
+def remoteScript(ssh, scriptName):
+    scriptPathName = scriptPath + scriptName
+    print scriptPathName
+    logFile = ""
+    if(os.path.isfile(scriptPathName)):
         channel = ssh.invoke_shell(term='vt100', width=80, height=24)
         
-        fileHandle = open(remoteScriptFile, 'r')
+        fileHandle = open(scriptPathName, 'r')
         for line in fileHandle:
             lineBits = line.split(" ")
             # handle special file transfer command
@@ -228,17 +257,27 @@ def remoteScript(ssh):
             if("@fileGet" == lineBits[0]):
                 source = lineBits[1]
                 target = lineBits[2]
-                getFile(ssh, source, '/home/gary/Desktop/' + deviceItem["devicealias"] + target)
+                logFile = logFilePath + deviceItem["devicealias"] + target
+                getFile(ssh, source, logFile)
+            if("@sleep" == lineBits[0]):
+                sleeptime = float(lineBits[1])
+                print "Sleeping for " + str(sleeptime) + " seconds..."
+                time.sleep(sleeptime)
+                
             else:
-#                print line
-                channel.send(line)
+                print line
+                bytesSent = channel.send(line)
+#                print bytesSent
 # this delay is used on slower devices to allow all commands to get to log file
-        time.sleep(3)
-#        output=channel.recv(8000)
-#        print(output)
+            time.sleep(1)
+#            output=channel.recv(8000)
+#            print(output)
     else:
         print "Remote script file does not exist!"
-        print "Please create a script file at:", remoteScriptFile
+        print "Please create a script file at:", scriptPathName
+        return -1
+    print "remoteScript completed"
+    return logFile
         
 #===============================================
    
@@ -259,12 +298,13 @@ def getFile(ssh, source, target):
     try:
         ftp = ssh.open_sftp()
     except paramiko.ssh_exception.SSHException, e:
-            print "SSH Exception on opening sftp connection\n", e
+        print "SSH Exception on opening sftp connection\n", e
     else:
         #====== now retrieve the remote file and place on desktop
         print "Get", source, "to", target
         ftp.get(source, target)
-        ftp.close() 
+        ftp.close()
+        print "Getfile completed"
 
 
 def searchForBulk(deviceList, ipAddress):
@@ -276,17 +316,19 @@ def searchForBulk(deviceList, ipAddress):
                 print "Bulk Service found at:", deviceItem["devicealias"]
                 bulkFound = 1
                 print "----------------------"
+                return 0
     if (bulkFound == 0):
         print "Bulk Service not installed on device at", ipAddress
         print "----------------------"
+        return 1
  
-def runScript(deviceTable):
+def runScript(deviceTable, scriptName):
    # attempt P2P connection after starting daemon
     portNum = 33000
-    print "is active"
+#    print "is active"
     print "----------\n"
     ssh, proc = p2pConnect(portNum, True)
-    # -2 indicates SSH Exception, commonly failure to retrievebanner
+    # -2 indicates SSH Exception, commonly failure to retrieve banner
     if(ssh == -2):
         print "Retrying P2P..."
         # ssh.close()
@@ -298,16 +340,17 @@ def runScript(deviceTable):
         ssh.close()
         proc.kill()
     else:
-        print "Trying proxy connection to %s." % deviceTable["devicealias"]
+        print "Connecting to %s via proxy." % deviceTable["devicealias"]
         ssh = proxyConnect(deviceTable["deviceaddress"], token)
         if(ssh != -1):
             print "Executing script via proxy."
-            remoteScript(ssh)
+            logFile = remoteScript(ssh, scriptName)
             ssh.close()
         else:
             print "Proxy connection failed!"
     portNum = portNum + 1
     print "----------"
+    return logFile
     
 #===============================================
 if __name__ == '__main__':
@@ -315,7 +358,6 @@ if __name__ == '__main__':
     httplib2.debuglevel     = 0
     http                    = httplib2.Http()
     content_type_header     = "application/json"
-
 
     loginURL = apiMethod + apiServer + apiVersion + "/api/user/login"
 
@@ -352,7 +394,7 @@ if __name__ == '__main__':
 #    except URLError:
 #        print "Connection failed!"
 #        exit()
-        
+
     print "Token = " +  token
 
     deviceListURL = apiMethod + apiServer + apiVersion + "/api/device/list/all"
@@ -373,20 +415,76 @@ if __name__ == '__main__':
     base64userName = base64.b64encode(userName)
     base64password = base64.b64encode(password)
 
+    # check to see if script and log folder exist, error and quit if not
+    # since you have to put scripts there
+    
+    
+
     foundDevice = False
+    piFound = 0
     # now iterate over all devices in returned list
     # check to see if current service type is SSH
     # next check all devices to see if there is an RMT3 service at the same internal and external IP
-    # if not, then send and execute the script which installs the rmt3 service and 
+    # if not, then send and execute the script which installs the rmt3 service and then adds the hardware ID
+    # to the other registered services
+    
     for deviceItem in deviceData["devices"]:
         if(deviceItem["servicetitle"] == "SSH"):
             foundDevice = True
-            print deviceItem["devicealias"]
-            if(deviceItem["devicestate"] == "active"):
-                searchForBulk(deviceData, deviceItem["lastinternalip"])
-#                runScript(deviceItem)
+            typeString = deviceItem["devicetype"] 
+            length = len(typeString)
+            # print "Length =" + str(length)
+
+            if(length == 47):
+                deviceBytes = typeString[24:29]
+                # print typeString
+                # print deviceBytes
+                if(deviceBytes == "04:30"):
+                    piFound = 1
+                    # print "Raspberry Pi found."
             else:
-                print "is not active."
-                print "----------\n"
+                if (length == 35):
+                    deviceBytes = typeString[24:29]
+                # print typeString
+                # print deviceBytes
+                    if(deviceBytes == "04:30"):
+                        piFound = 1
+                        # print "Raspberry Pi found."
+               
+            
+            if((piFound == 1) & (deviceItem["devicestate"] == "active")):
+                 print "\n=========================================="               
+                 print deviceItem["devicealias"]
+                 print deviceItem["lastinternalip"]
+                 if(searchForBulk(deviceData, deviceItem["lastinternalip"]) == 1):
+                    logFile = runScript(deviceItem, "getinfo")
+                    print logFile
+                    regex = re.compile("^Version:\s+\d\.\d-\w+", re.I)
+                    fileHandle2 = open(logFile, 'r')
+                    for line in fileHandle2:
+                        # print line
+                        weavedconnectd = regex.search(line)
+                        # print weavedconnectd
+                        if (weavedconnectd != None):
+                            version = string.split(weavedconnectd.group(0))[1]
+                            # print version
+                            print weavedconnectd.group(0)
+                            if(version == "1.3-07v"):
+                                print "Installed version of weavedconnectd is up to date"
+                            else:
+                                print "Downloading and installing new version"
+                                logFile = runScript(deviceItem, "updateWeavedConnectd")
+                                print logFile
+                                # the previous script will kill the SSH connection when it runs
+                                # dpkg. Wait a few seconds and then go get the dpkg log.
+                                print "Pausing for 30 seconds for daemons to restart"
+                                time.sleep(30)
+                                logFile = runScript(deviceItem, "getDpkgLog")
+                                print logFile
+                                addName(deviceItem, "test-name")
+                                
+#            else:
+#                print "is not active."
+#                print "----------\n"
 
 

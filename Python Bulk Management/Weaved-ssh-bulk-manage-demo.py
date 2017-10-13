@@ -67,7 +67,7 @@ def getPort(UID, name):
 #===============================================
 def p2pConnect(startPortNum, startDaemon):
 #   uncomment the following line to force proxy mode connections
-#    return (-1,0)
+    return (-1,0)
     portNum = getPort(deviceItem["deviceaddress"], deviceItem["devicealias"])                
     print "Device:", deviceItem["devicealias"]
     if(startDaemon == True):
@@ -100,9 +100,14 @@ def p2pConnect(startPortNum, startDaemon):
 #===============================================
 from urllib2 import urlopen
 from json import dumps
+from json import load
 
 def proxyConnect(UID, token):
-    my_ip = urlopen('http://ip.42.pl/raw').read()
+    print "Entering proxyConnect()"
+    # my_ip = urlopen('http://ip.42.pl/raw').read()
+    my_ip = load(urlopen('http://jsonip.com'))['ip']
+    print "my_ip =", my_ip
+
     proxyConnectURL = apiMethod + apiServer + apiVersion + "/api/device/connect"
 
     proxyHeaders = {
@@ -123,26 +128,31 @@ def proxyConnect(UID, token):
                                           body=dumps(proxyBody),
                                        )
 #    print "Response = ", response
-#    print "Content = ", content
+    print "Content = ", content
 
     data = json.loads(content)["connection"]["proxy"]
     URI = data.split(":")[0] + ":" + data.split(":")[1]
     URI = URI.split("://")[1]
     portNum = data.split(":")[2]
+
+    print "URI = ", URI
+    print "Port = ", portNum
     
     ssh = trySSHConnect(URI, int(portNum))
     return ssh
 
 #===============================================
 def trySSHConnect(host, portNum):
-# initiate Paramiko SSH session
+# initiate Paramiko SSH session Ex
     sshUserName, sshPassword = getSSHCredentials()
     paramiko.util.log_to_file ('paramiko.log') 
 
 #and then check the response...
     try:
         ssh = paramiko.SSHClient()
+        print "1"
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        print "2"
 # was trying to add banner_timeout because it seems to have that failure
 # occasionally. Couldn't get it working.
 #        ssh.connect(host, port=portNum, username=sshUserName,
@@ -150,8 +160,15 @@ def trySSHConnect(host, portNum):
 #            timeout=3.0, allow_agent=True, look_for_keys=True,
 #            compress=False, sock=None, gss_auth=False, gss_kex=False,
 #            gss_deleg_creds=True, gss_host=None, banner_timeout=5.0)
-        ssh.connect(host, port=portNum, username=sshUserName, password=sshPassword)
+        print "hostname = ", host
+        print "port = ", portNum
+        print "sshUsername = ", sshUserName
+        print "sshPassword = ", sshPassword
+
+        ssh.connect(hostname=host, port=portNum, username=sshUserName, password=sshPassword)
+        print "3"
         ssh.get_transport().window_size = 3 * 1024 * 1024
+        print "4"
     except paramiko.AuthenticationException:
         print "Authentication failed!"
         return -1
@@ -291,11 +308,11 @@ if __name__ == '__main__':
     except KeyError:
         print "Comnnection failed!"
         exit()
-    except URLError:
-        print "Connection failed!"
-        exit()
+#    except URLError:
+#        print "Connection failed!"
+#        exit()
         
-#    print "Token = " +  token
+    print "Token = " +  token
 
     deviceListURL = apiMethod + apiServer + apiVersion + "/api/device/list/all"
 

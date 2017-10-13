@@ -37,8 +37,8 @@ apiServer="api.weaved.com"
 apiKey="WeavedDemoKey$2015"
 
 # for production, remove these and ask the user at the begnning of the session
-userName = "faultline1989@yahoo.com"
-password = "weaved$2012"
+userName = ""
+password = ""
 deviceName=""
 # substitute the name of the actual daemon you are using.
 # this will depend on CPU architecture and OS details
@@ -481,7 +481,7 @@ if __name__ == '__main__':
                                 time.sleep(30)
                                 logFile = runScript(deviceItem, "getDpkgLog")
                                 print logFile
-                                addName(deviceItem, "test-name")
+                                addName(deviceItem, deviceItem["devicealias"] + "-rmt3")
                                 
 #            else:
 #                print "is not active."

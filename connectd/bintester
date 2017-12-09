@@ -1,0 +1,76 @@
+
+#!/bin/sh
+#
+# This (1.1.3 at least) nearly works in /bin/sh but I changed to bash just because its easier
+#
+# Mike Smith did this, written as simple as possible to work on as many platforms as possible.
+# This tests a set of remot3.it binaries in the directory containing this script.
+#
+# v1.0: Quick first version, just execute each binary with -n option to see if it runs
+# v1.1: Add more tests for each binary, add platform fingerprint tests
+# v1.2: require cmd line parameter, mips or arm, as we have only one Mac daemon
+#       This will now download matching daemons from Github to a test folder.
+#       Then it will try executing them and tell you which one is compatible.
+#       GSW.
+
+downloadAndTestDaemon()
+{
+    testArch=$1
+    testDaemon=connectd."$testArch"
+    echo
+    echo "Downloading and testing $testDaemon..." | tee -a remot3.itBinaryTestLog.txt
+    if [ ! -e "$testDaemon" ]; then
+        curl -LkO https://github.com/weaved/misc_bins_and_scripts/raw/master/connectd/"$testDaemon" &> /dev/null
+        if [ "$?" != "0" ]; then
+            echo "$testDaemon download failed!" | tee -a remot3.itBinaryTestLog.txt
+            exit 1
+        fi
+    else
+        echo "$testDaemon already in current directory, testing now..." | tee -a remot3.itBinaryTestLog.txt
+    fi
+    chmod +x "$testDaemon"
+            ./"$testDaemon" -n &> /dev/null
+    if [ "$?" = "0" ]; then
+        echo "$testDaemon is compatible!" | tee -a remot3.itBinaryTestLog.txt
+        break
+    else
+        echo "$testDaemon is not compatible!" | tee -a remot3.itBinaryTestLog.txt
+        rm "$testDaemon"
+    fi
+    echo
+}
+
+#
+# Add a timestamp and divider line as headers to the log file and console
+#
+PWD=$(pwd)
+echo "********************************************************"  | tee -a remot3.itBinaryTestLog.txt
+echo "remot3.it platform and binary tester for current directory $PWD" | tee -a remot3.itBinaryTestLog.txt
+date  | tee -a remot3.itBinaryTestLog.txt
+echo "********************************************************" | tee -a remot3.itBinaryTestLog.txt
+#
+
+# check for command line parameter
+if [ "$1" = "mips" ]; then
+    BASEPLATFORM="mips"
+elif
+   [ "$1" = "arm" ]; then
+    BASEPLATFORM="arm"
+	echo "Sorry, ARM is not currently supported."
+else
+   echo "usage: ./bintester <arch>"
+   echo "Where <arch> is either mips or arm."
+   exit 1
+fi
+
+if [ "$BASEPLATFORM" = "mips" ]; then
+    downloadAndTestDaemon mips-msb-uClib
+    downloadAndTestDaemon mips-uclib-0.9.33.2
+    downloadAndTestDaemon mips-uclib-0.9.33.2.static
+    downloadAndTestDaemon mipsel-bcm5354
+    downloadAndTestDaemon mipsel-bcm5354-static
+    downloadAndTestDaemon mipsel-gcc342
+    downloadAndTestDaemon mipsel-gcc342-static
+fi
+
+exit 0

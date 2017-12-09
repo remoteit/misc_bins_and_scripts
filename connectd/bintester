@@ -32,7 +32,6 @@ downloadAndTestDaemon()
             ./"$testDaemon" -n &> /dev/null
     if [ "$?" = "0" ]; then
         echo "$testDaemon is compatible!" | tee -a remot3.itBinaryTestLog.txt
-        break
     else
         echo "$testDaemon is not compatible!" | tee -a remot3.itBinaryTestLog.txt
         rm "$testDaemon"
@@ -72,7 +71,7 @@ if [ "$BASEPLATFORM" = "mips" ]; then
     downloadAndTestDaemon mipsel-gcc342-static
 elif [ "$BASEPLATFORM" = "arm" ]; then
     downloadAndTestDaemon arm-gnueabi
-    downloadAndTestDaemon arm-gnu-eabi-static
+    downloadAndTestDaemon arm-gnueabi-static
     downloadAndTestDaemon arm-linaro-static
     downloadAndTestDaemon arm-uclib
     downloadAndTestDaemon arm-uclib-static

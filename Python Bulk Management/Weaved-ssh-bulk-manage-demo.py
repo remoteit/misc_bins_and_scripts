@@ -13,18 +13,30 @@ import errno
 from socket import error as socket_error
 import socket
 
+# this should be your home folder
 homeFolder = "/home/gary"
 
-authcache = True
+# when authCache is set to True, your account credentials will be saved in ~/.weaved/auth
+# if you don't want this to happen, keep authcache as False
+authcache = False
 authCacheFile="~/.weaved/auth"
 
+# for P2P connections we have the ability to maintain the port assignment for a given UID (deviceaddress)
 portCache = True;
 portCacheFile=homeFolder + "/.weaved/endpoints"
 
+# sshCache will store your SSH credentials per device so you don't have to re-enter them each time
 sshCache=True;
 sshCacheFile = homeFolder + "/.weaved/ssh"
 
+# deviceList File is the list of UIDs you wish to scan through - in this case they should be configured for SSH
 deviceListFile = homeFolder + "/.weaved/devicelist"
+
+# remoteScriptFile is the script you want to have executed on the target device.
+# this is just like any shell script with two additions:
+# @fileSend source target - sends a file from the source to the remote device
+# @fileGet source target - gets a file from the source (remote device) to the target (local device)
+
 remoteScriptFile = homeFolder + "/.weaved/remotescript"
 
 apiMethod="http://"
@@ -38,7 +50,6 @@ deviceName=""
 # substitute the name of the actual daemon you are using.
 # this will depend on CPU architecture and OS details
 clientDaemon = "/usr/bin/weavedConnectd.linux"
-
 
 #===============================================
 def getPort(UID, name):
@@ -212,6 +223,8 @@ def remoteScript(ssh):
             if("@fileGet" == lineBits[0]):
                 source = lineBits[1]
                 target = lineBits[2]
+                # this line is putting the retrieved file in a certain place and naming it with the target device name (alias)
+                # you may choose to change this to anything you want
                 getFile(ssh, source, '/home/gary/Desktop/' + deviceItem["devicealias"] + target)
             else:
 #                print line

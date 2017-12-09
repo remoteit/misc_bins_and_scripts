@@ -56,7 +56,6 @@ if [ "$1" = "mips" ]; then
 elif
    [ "$1" = "arm" ]; then
     BASEPLATFORM="arm"
-	echo "Sorry, ARM is not currently supported."
 else
    echo "usage: ./bintester <arch>"
    echo "Where <arch> is either mips or arm."
@@ -71,6 +70,13 @@ if [ "$BASEPLATFORM" = "mips" ]; then
     downloadAndTestDaemon mipsel-bcm5354-static
     downloadAndTestDaemon mipsel-gcc342
     downloadAndTestDaemon mipsel-gcc342-static
+elif [ "$BASEPLATFORM" = "arm" ]; then
+    downloadAndTestDaemon arm-gnueabi
+    downloadAndTestDaemon arm-gnu-eabi-static
+    downloadAndTestDaemon arm-linaro-static
+    downloadAndTestDaemon arm-uclib
+    downloadAndTestDaemon arm-uclib-static
+    downloadAndTestDaemon pi
 fi
 
 exit 0

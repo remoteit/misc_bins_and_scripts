@@ -11,9 +11,9 @@ Download and run the bintester to find the best daemon for ARM and MIPS platform
 - cd /tmp
 - sudo wget https://github.com/weaved/misc_bins_and_scripts/raw/master/connectd/bintester
 - sudo chmod +x bintester
-- ./bintester <arch>
+- ./bintester arch
  
- where <arch> is either arm or mips
+ where arch is either arm or mips
  
 # Precompiled Bin Description
 

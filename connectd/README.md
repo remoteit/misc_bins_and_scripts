@@ -5,7 +5,7 @@ Precompiled Bins for differnet OS and Architectures  Version 3.8
  - In version 3.8 we change the binary names to connectd.  
  - ping time tuning is added for lower idle bandwidth usage.
 
-# bintester script
+# bintester script -
 Download and run the bintester to find the best daemon for ARM and MIPS platforms
 
 cd /tmp

@@ -8,10 +8,10 @@ Precompiled Bins for differnet OS and Architectures  Version 3.8
 # bintester script -
 Download and run the bintester to find the best daemon for ARM and MIPS platforms
 
-cd /tmp
-sudo wget https://github.com/weaved/misc_bins_and_scripts/raw/master/connectd/bintester
-sudo chmod +x bintester
-./bintester <arch>
+- cd /tmp
+- sudo wget https://github.com/weaved/misc_bins_and_scripts/raw/master/connectd/bintester
+- sudo chmod +x bintester
+- ./bintester <arch>
  
  where <arch> is either arm or mips
  

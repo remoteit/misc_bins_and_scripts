@@ -1,5 +1,5 @@
 # Precompiled connectd bins
-Precompiled Bins for differnet OS and Architectures  Version 3.8
+Precompiled Bins for different OS and Architectures  Version 3.8
 
 # Version 3.8
  - In version 3.8 we change the binary names to connectd.  

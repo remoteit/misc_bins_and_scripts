@@ -6,7 +6,7 @@
 #
 #  <optional>  -v = verbose -v -v =maximum verbosity
 #
-#  will store info in ~/.weavedc/
+#  will store info in ~/.remot3it/
 #
 #  License See : https://github.com/weaved/ssh_client
 #
@@ -26,15 +26,15 @@ MODIFIED="Jan 14, 2018"
 #
 # Config Dir
 #
-WEAVED_DIR="$HOME/.weaved"
-USER="$WEAVED_DIR/user"
-ENDPOINTS="$WEAVED_DIR/endpoints"
-AUTH="$WEAVED_DIR/auth"
-CONNECTION_LOG="$WEAVED_DIR/log.$$.txt"
+REMOT3IT_DIR="$HOME/.remot3it"
+USER="$REMOT3IT_DIR/user"
+ENDPOINTS="$REMOT3IT_DIR/endpoints"
+AUTH="$REMOT3IT_DIR/auth"
+CONNECTION_LOG="$REMOT3IT_DIR/log.$$.txt"
 #
 #
 #
-BIN_DIR=/usr/local/bin
+# connectd daemon name expected on the client
 EXE=connectd
 #
 # Save Auth in homedir
@@ -48,9 +48,10 @@ authtype=0
 #
 #
 apiMethod="https://"
-apiVersion=""
-apiServer="api.weaved.com"
-apiKey="WeavedDemoKey\$2015"
+apiVersion="/apv/v23.5"
+apiServer="api.remot3.it"
+developerkey=""
+pemkey=""
 startPort=33000
 #
 # Global Vars if set will not ask for these
@@ -61,8 +62,8 @@ AHASH=""
 #
 # Other Globals
 #
-DEVICE_ADDRESS=""
-DEVICE_STATE=""
+SERVICE_ADDRESS=""
+SERVICE_STATE=""
 LIST_ONLY=0
 VERBOSE=0
 DEBUG=0
@@ -72,10 +73,10 @@ FAILTIME=10
 #
 # API URL's
 #
-loginURLpw="${apiMethod}${apiServer}${apiVersion}/api/user/login"
-loginURLhash="${apiMethod}${apiServer}${apiVersion}/api/user/login/authhash"
-logoutURL="${apiMethod}${apiServer}${apiVersion}/api/user/logout"
-deviceListURL="${apiMethod}${apiServer}${apiVersion}/api/device/list/all"
+loginURLpw="${apiMethod}${apiServer}${apiVersion}/user/login"
+loginURLhash="${apiMethod}${apiServer}${apiVersion}/user/login/authhash"
+logoutURL="${apiMethod}${apiServer}${apiVersion}/user/logout"
+deviceListURL="${apiMethod}${apiServer}${apiVersion}/device/list/all"
 ##### End Settings #####
 
 #
@@ -88,13 +89,13 @@ manpage()
 #
 read -d '' man_text << EOF
 
-SSHW - A ssh connection wrapper for Weaved
+SSHW - A ssh connection wrapper for remot3.it showing use of the client-side daemon for a P2P connection.
 ------------------------------------------
 This software allows you to make ssh connections to your remot3.it enabled ssh servers.
 
-Your username and password will be stored in ~/.weaved/auth.  In the event of a "102] login failure" error, delete this file and try again.
+Your username and password will be stored in ~/.remot3it/auth.  In the event of a "102] login failure" error, delete this file and try again.
 
-To get a list of all devices associated with your account, use:
+To get a list of all services associated with your account, use:
 
 ./sshw.sh -l
 
@@ -122,7 +123,7 @@ To clear out all cached data (port assignments, device list)
 
 ./sshw.sh -r
 
-Connection times may be a little slower and you may get SSH connection security warnings after doing this until all devices have been conneced to once.
+Connection times may be a little slower and you may get SSH connection security warnings after doing this until all services have been conneced to once.
 
 To cleanup (reset login authorization and active port assignments)
 
@@ -136,9 +137,9 @@ The script starts by logging into the remot3.it server to obtain a login token. 
 
 https://remot3it.readme.io/v23.5/reference
 
-The user token is sent to the Device List API call in order to retrieve the full device list associated with this account.
+The user token is sent to the Service List API call in order to retrieve the full device list associated with this account.
 
-From there we parse the JSON output of the device list and find the entry corresponding to the device name you gave.  We find the UID (JSON ["deviceaddress"]) for this entry and use this in conjunction with the WeavedConnect daemon (weavedconnectd) in client mode to initiate a peer to peer connection.
+From there we parse the JSON output of the device list and find the entry corresponding to the device name you gave.  We find the UID (JSON ["deviceaddress"]) for this entry and use this in conjunction with the remot3.it daemon (connectd) in client mode to initiate a peer to peer connection.
 
 /usr/bin/connectd -c <base64 of username> <base64 of password> <UID> T<portnum> <Encryption mode> <localhost address> <maxoutstanding>
 
@@ -154,7 +155,7 @@ From there we parse the JSON output of the device list and find the entry corres
 Example:
 /usr/bin/connectd -c ZmF1bHReaX5lMTk9OUB5YWhvby5jb20= d5VhdmVkFjAxWg== 80:00:00:0F:96:00:01:D3 T33000 1 127.0.0.1 12
 
-Now you have a listener at 127.0.0.1:33000 that is a connection through Weaved to your remote device.
+Now you have a listener at 127.0.0.1:33000 that is a connection through remot3.it to your remote device's SSH service.
 
 The command line ssh client is launched and you are greeted with a request for your SSH password.  Until the port assignment values are cached, you may see SSH security warnings.
 
@@ -168,7 +169,7 @@ printf "\n%s\n\n\n" "$man_text"
 #
 usage()
 {
-        echo "Usage: $0 [-v (verbose)] [-v (maximum verbosity)] [-l(ist devices only)] [-c(leanup)] [-r(eset to default)] [-m(an page)] [-h (this message)] [user@]<devicename> [passed on to ssh]" >&2
+        echo "Usage: $0 [-v (verbose)] [-v (maximum verbosity)] [-l(ist services only)] [-c(leanup)] [-r(eset to default)] [-m(an page)] [-p (use PEM key for SSH login)] [-h (this message)] [user@]<devicename> [passed on to ssh]" >&2
         echo "     [optional] must specify device name." >&2
         echo "Version $VERSION Build $MODIFIED" >&2
         exit 1 
@@ -186,10 +187,10 @@ cleanup_files()
     # reset auth
     rm -f $AUTH
     # reset active files
-    rm -f ${WEAVED_DIR}/*.active
+    rm -f ${REMOT3IT_DIR}/*.active
 }
 #
-# Delete all the stuff in ~\.weaved to reset to default.  You may have to clean up your .ssh/known_hosts
+# Delete all the stuff in ~\.remot3it to reset to default.  You may have to clean up your .ssh/known_hosts
 # to get rid of ssh connection errors if your connections land on different ports
 #
 resetToDefault()
@@ -197,7 +198,7 @@ resetToDefault()
     if [ $VERBOSE -gt 0 ]; then
         printf "Resetting remot3.it settings to default.\n"
     fi   
-    rm -f ${WEAVED_DIR}/*
+    rm -f ${REMOT3IT_DIR}/*
 }
 
 
@@ -207,16 +208,16 @@ resetToDefault()
 create_config()
 {
     umask 0077
-    # create weaved directory
-    if [ ! -d "$WEAVED_DIR" ]; then
-        mkdir "$WEAVED_DIR" 
+    # create remot3it directory
+    if [ ! -d "$REMOT3IT_DIR" ]; then
+        mkdir "$REMOT3IT_DIR" 
     fi
     # create files if they do not exist
     if [ ! -f "$ENDPOINTS" ] ; then
         touch "$ENDPOINTS"
     fi
     # cleanup old log files
-    rm -f $WEAVED_DIR/*.txt
+    rm -f $REMOT3IT_DIR/*.txt
 }
 #
 # Cleanup, this cleans up the files for the connection, and kills the P2P session if necessary
@@ -243,11 +244,11 @@ cleanup()
         kill $pid
     fi
     # cleanup port active file
-    if [ -f "$WEAVED_DIR/${port}.active" ] ; then
+    if [ -f "$REMOT3IT_DIR/${port}.active" ] ; then
         if [ $VERBOSE -gt 0 ]; then
-            printf "Remove active flag file $WEAVED_DIR/${port}.active.\n"
+            printf "Remove active flag file $REMOT3IT_DIR/${port}.active.\n"
         fi
-        rm $WEAVED_DIR/${port}.active
+        rm $REMOT3IT_DIR/${port}.active
     fi
 }
 
@@ -297,10 +298,19 @@ check_auth_cache()
         # Auth file exists, lets get it
         read -r line < "$AUTH"
         # Parse
-        username=${line%%"|"*}
-        password=${line##*"|"}
-        t=${line#*"|"}
-        authtype=${t%%"|"*}
+#        username=${line%%"|"*}
+        username=$(echo $line | awk -F"|" '{print $1 }')
+# echo "username: $username"
+#        password=${line##*"|"}
+        password=$(echo $line | awk -F"|" '{print $3 }')
+# echo "password: $password"
+#        t=${line#*"|"}
+#echo "t: $t"
+        authtype=$(echo $line | awk -F"|" '{print $2 }')
+#        authtype=${t%%"|"*}
+# echo "authtype: $authtype"
+        developerkey=$(echo $line | awk -F"|" '{print $4 }')
+# echo "developerkey: $developerkey"
         if [ $authtype -eq 1 ]; then
             ahash=$password
         fi
@@ -310,9 +320,9 @@ check_auth_cache()
 }
 
 #
-# Check Device Cache, return 1 if found and $port set
+# Check Service Cache, return 1 if found and $port set
 #
-checkDeviceCache()
+checkServiceCache()
 {
     port=0
 
@@ -323,55 +333,55 @@ checkDeviceCache()
         #found grab port
         p=${dev_info%%"|"*}
         port=${p##*"TPORT"}
-        #Get address DEVICE_ADDRESS
-        DEVICE_ADDRESS=${dev_info##*"|"}
+        #Get address SERVICE_ADDRESS
+        SERVICE_ADDRESS=${dev_info##*"|"}
         return 1
     fi
     return 0
 }
 
 #
-#parse devices
+#parse services
 #
-# fills device_array on return
+# fills service_array on return
 #
 parse_device()
 {
-    #parse devices data into lines, this old code is not MacOS mach compatible
+    #parse services data into lines, this old code is not MacOS mach compatible
     #lines=$(echo "$1" | sed  's/},{/}\n{/g' )
     #lines=$(echo "$in" | sed  's/},{/}\'$'\n''{/g' )
     #lines=$(echo "$1" | sed  's/},{/}|{/g' )
     #parse lines into array 
-    #readarray -t device_array < <( echo "$lines" )
+    #readarray -t service_array < <( echo "$lines" )
     # mac friendly replacement
-    #device_array=( $(echo $lines | cut -d $'\n' -f1) )
+    #service_array=( $(echo $lines | cut -d $'\n' -f1) )
 
     # New optimized code that works with MacOS
     lines=$(echo "$1" | sed  's/},{/}|{/g' )
     IFS='|'
-    device_array=(  $lines )
+    service_array=(  $lines )
 }
 
 #
 # match_device 
 #   match the passed device name to the array and return the index if found or 0 if not
-#   if found device_state and device_address are set
+#   if found service_state and service_address are set
 #
 match_device()
 {
     # loop through the device array and match the device name
-    for i in "${device_array[@]}"
+    for i in "${service_array[@]}"
     do
         # do whatever on $i
-        #device_name=$(jsonval "$(echo -n "$i")" "devicealias") 
-        device_name=$(jsonval "$i" "devicealias") 
+        #service_name=$(jsonval "$(echo -n "$i")" "devicealias") 
+        service_name=$(jsonval "$i" "devicealias") 
    
-        if [ "$device_name" = "$1" ]; then
+        if [ "$service_name" = "$1" ]; then
             # Match echo out the UID/address
-            #device_address=$(jsonval "$(echo -n "$i")" "deviceaddress")
-            DEVICE_ADDRESS=$(jsonval "$i" "deviceaddress")
-            DEVICE_STATE=$(jsonval "$i" "devicestate")
-            #echo -n "$DEVICE_ADDRESS"
+            #service_address=$(jsonval "$(echo -n "$i")" "deviceaddress")
+            SERVICE_ADDRESS=$(jsonval "$i" "deviceaddress")
+            SERVICE_STATE=$(jsonval "$i" "devicestate")
+            #echo -n "$SERVICE_ADDRESS"
             return 1
         fi
     done
@@ -382,34 +392,37 @@ match_device()
 }
 
 #
-# Device List
+# Service List
 #
-display_devices()
+display_services()
 {
-    printf "%-25s | %-15s |  %-10s \n" "Device Name" "Device Type" "Device State"
+    printf "%-30s | %-15s |  %-10s \n" "Service Name" "Service Type" "Service State"
     echo "--------------------------------------------------------------"
     # loop through the device array and match the device name
-    for i in "${device_array[@]}"
+    for i in "${service_array[@]}"
     do
         # do whatever on $i
-        device_name=$(jsonval "$i" "devicealias")
-        device_state=$(jsonval "$i" "devicestate")
-        device_service=$(jsonval "$i" "servicetitle")
-        printf "%-25s | %-15s |  %-10s \n" $device_name $device_service $device_state
-        #echo "$device_name : $device_service : $device_state"
+        service_name=$(jsonval "$i" "devicealias")
+        service_state=$(jsonval "$i" "devicestate")
+        service_service=$(jsonval "$i" "servicetitle")
+        if [ "$service_service" == "SSH" ]; then
+            printf "%-30s | %-15s |  %-10s \n" $service_name $service_service $service_state
+        fi
+        #echo "$service_name : $service_service : $service_state"
     done
+    echo
 }
 
 
 ######### Begin Portal Login #########
 
-getUserAndPassword() #get weaved user and password interactivly from user
+getUserAndPassword() #get remot3it user and password interactively from user
 {
     if [ "$USERNAME" != "" ]; then 
         username="$USERNAME"
     else
         printf "\n\n\n"
-        printf "Please enter your Weaved username (email address): \n"
+        printf "Please enter your remot3.it account username (email address): \n"
         read username
     fi
 
@@ -421,9 +434,15 @@ getUserAndPassword() #get weaved user and password interactivly from user
         if [ "$PASSWD" != "" ]; then
             password="$PASSWD"
         else
-            printf "\nNow, please enter your password: \n"
+            printf "\nPlease enter your password: \n"
             read  -s password
         fi
+    fi
+    if [ "$DEVELOPERKEY" != "" ]; then
+        developerkey="$DEVELOPERKEY"
+    else
+       printf "\nPlease enter your Developer API key: \n"
+       read developerkey
     fi
 }
 
@@ -433,13 +452,20 @@ getUserAndPassword() #get weaved user and password interactivly from user
 # returns 0 if not logged in login error is set
 userLogin () #Portal login function
 {
-    printf "Connecting...\n"
+    printf "Logging in...\n"
+#    echo "loginURLpw=$loginURLpw"
+#    echo "username=$username"
+#    echo "password=$password"
+#    echo "developerkey=$developerkey"
+#    echo 
     
     if [ $authtype -eq 1 ]; then
-        resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:${apiKey}" "$loginURLhash/$username/$ahash")
+        resp=$(curl -s -S -X GET -H "content-type:application/json" -H "developerkey:${developerkey}" "$loginURLhash/$username/$ahash")
     else
-        resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:${apiKey}" "$loginURLpw/$username/$password")
+        resp=$(curl -s -S -X POST -H "developerkey: ${developerkey}" -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d "{ \"username\" : \"$username\", \"password\" : \"$password\" }" "$loginURLpw")
     fi
+
+#    echo "resp=$resp"
 
     status=$(jsonval "$(echo -n "$resp")" "status")
 
@@ -455,7 +481,7 @@ userLogin () #Portal login function
         # good, get token
         #token=$(jsonval "$(echo -n "$resp")" "token")
         token=$(jsonval "$resp" "token")
-        date +"%s" > ~/.weaved_lastlogin
+        date +"%s" > ~/.remot3it_lastlogin
         # get atoken
         ahash=$(jsonval "$resp" "service_authhash")
         #echo "Got authhash >>$ahash"
@@ -470,10 +496,10 @@ userLogin () #Portal login function
  
 ######### End Portal Login #########
 
-######### Device List ########
+######### Service List ########
 deviceList()
 {
-    resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:"${apiKey}"" -H "token:${token}" "$deviceListURL")
+    resp=$(curl -s -S -X GET -H "content-type:application/json" -H "developerkey:$developerkey" -H "token:${token}" "$deviceListURL")
     echo $resp
 }
 
@@ -501,7 +527,7 @@ log_event()
             case "$LINE" in
                 *auto\ connect\ failed*)
                     kill -3 $TPID
-                    echo "Cannot create a connection to device $device_name"
+                    echo "Cannot create a connection to device $service_name"
                     return 4
                     ;;
                 *proxy\ startup\ failed*)
@@ -516,12 +542,12 @@ log_event()
                 ;;
                 *usage:*)
                     kill -3 $TPID
-                    echo "Error starting weavedConnectd daemon"
+                    echo "Error starting connectd daemon"
                     return 2
                     ;;
                 *command\ not\ found*)
                     kill -3 $TPID
-                    echo "weavedConnectd daemon not found In path"
+                    echo "connectd daemon not found In path"
                     return 3
                     ;;
                 *state\ 5*)
@@ -559,7 +585,7 @@ create_config
 ################################################
 # parse the flag options (and their arguments) #
 ################################################
-while getopts lvhmcr OPT; do
+while getopts plvhmcr OPT; do
     case "$OPT" in
       c)
         cleanup_files
@@ -568,6 +594,9 @@ while getopts lvhmcr OPT; do
       r)
         resetToDefault
         exit 0
+        ;;
+      p)
+        pemkey=$OPTARG
         ;;
       m)
         manpage
@@ -619,14 +648,14 @@ else
 fi
 
 #check device cache to see if we have device in cache
-checkDeviceCache
+checkServiceCache
 if [ $? = 1 ] && [ "$LIST_ONLY" -eq 0 ]; then
     # device found in cache, 
     if [ $VERBOSE -gt 0 ]; then
-        printf "Found ${device} in cache with UID of ${DEVICE_ADDRESS} and port ${port}.  Trying fast connect, assuming credentials are valid and device is active.\n"
+        printf "Found ${device} in cache with UID of ${SERVICE_ADDRESS} and port ${port}.  Trying fast connect, assuming credentials are valid and device is active.\n"
         #force device state as active, this may cause problems if not active
     fi
-    DEVICE_STATE="active"
+    SERVICE_STATE="active"
 else
 
     # Login the User (future check if already logged in with token or user exists in saved form)
@@ -652,9 +681,9 @@ else
             fi
             # Save either pw or hash depending on settings
             if [ $USE_AUTHHASH -eq 1 ]; then
-                echo "${username}|1|${ahash}" > $AUTH 
+                echo "${username}|1|${ahash}|${developerkey}" > $AUTH 
             else
-                echo "${username}|0|${[password}" > $AUTH 
+                echo "${username}|0|${[password}|${developerkey}" > $AUTH 
             fi
         fi      
     fi
@@ -665,22 +694,22 @@ else
     # parse device list
     parse_device "$dl_data"
 
-
     if [ "$LIST_ONLY" -eq 1 ]; then
         # just display list only
-        echo "Available devices"
-        display_devices
+        echo "Available SSH services"
+        echo
+        display_services
         exit 0
     fi
 
-    # Match Device passed to device list
+    # Match Service passed to device list
     #address=$(match_device $device)
     match_device $device 
 
     retval=$?
     if [ "$retval" == 0 ]
     then
-        echo "Device not found"
+        echo "Service not found"
         exit 255
     fi
 
@@ -695,22 +724,22 @@ else
         # else get next port
         port=$(next_port)
         #append to file
-        echo "TPORT${port}|${device}|${DEVICE_ADDRESS}" >> $ENDPOINTS
+        echo "TPORT${port}|${device}|${SERVICE_ADDRESS}" >> $ENDPOINTS
     fi
 fi
 
 #if [ $VERBOSE -gt 0 ]; then
-#    echo "Device-- $device address is $address"
+#    echo "Service-- $device address is $address"
 #fi
 
 base_username=$(echo -n "$username" | base64)
 
 if [ $VERBOSE -gt 0 ]; then
-    echo "Device $device address is $DEVICE_ADDRESS"
-    echo "Device is $DEVICE_STATE"
+    echo "Service $device address is $SERVICE_ADDRESS"
+    echo "Service is $SERVICE_STATE"
     echo "base64 username is $base_username"
     echo "Connection will be to 127.0.0.1:$port"
-    if [  -e "$WEAVED_DIR/${port}.active" ]; then
+    if [  -e "$REMOT3IT_DIR/${port}.active" ]; then
         echo "A connection is already active, we will reuse the existing connection on port ${port}.";
     fi
 fi
@@ -718,8 +747,8 @@ fi
 #
 # IF device is not active we should warn user and not attach
 #
-if [ "$DEVICE_STATE" != "active" ]; then
-    echo "Device is not active on the Weaved Network, aborting connection attempt."
+if [ "$SERVICE_STATE" != "active" ]; then
+    echo "Service is not active on the remot3.it Network, aborting connection attempt."
     exit 1
 fi
 
@@ -727,7 +756,7 @@ fi
 #
 # now check if port is already active, we do this by checking port running file
 #
-if [  -e $WEAVED_DIR/$port.active ]; then
+if [  -e $REMOT3IT_DIR/$port.active ]; then
     # port is active, lets just connect to it
     echo "102"
     if [ $VERBOSE -gt 0 ]; then
@@ -762,9 +791,9 @@ else
         # make the connection
         #$EXE -p "$base_username" "$ahash" "$address" "T$port" 2 127.0.0.1 0.0.0.0 15 0 0 > $CONNECTION_LOG &
         if [ $VERBOSE -gt 1 ]; then
-            echo "Issuing command: $EXE -p $base_username $ahash $DEVICE_ADDRESS T$port 2 127.0.0.1 0.0.0.0 15 0 0 > $CONNECTION_LOG &"
+            echo "Issuing command: $EXE -p $base_username $ahash $SERVICE_ADDRESS T$port 2 127.0.0.1 0.0.0.0 15 0 0 > $CONNECTION_LOG &"
         fi
-        $EXE -s -p $base_username $ahash $DEVICE_ADDRESS T$port 2 127.0.0.1 0.0.0.0 15 0 0 > $CONNECTION_LOG 2>&1 &
+        $EXE -s -p $base_username $ahash $SERVICE_ADDRESS T$port 2 127.0.0.1 0.0.0.0 15 0 0 > $CONNECTION_LOG 2>&1 &
         pid=$!
     else
         base_password=$(echo -n "$password" | base64)
@@ -772,9 +801,9 @@ else
         # -c base64(yoicsid) base64(password) UID_to_connect TPort_to_bind encryption bind_to_address maxoutstanding
         #
         if [ $VERBOSE -gt 1 ]; then
-            echo "Issuing command: $EXE -c $base_username $base_password $DEVICE_ADDRESS T$port 2 127.0.0.1 15 > $CONNECTION_LOG &"
+            echo "Issuing command: $EXE -c $base_username $base_password $SERVICE_ADDRESS T$port 2 127.0.0.1 15 > $CONNECTION_LOG &"
         fi   
-        $EXE -s -c $base_username $base_password $DEVICE_ADDRESS T$port 2 127.0.0.1 15 > $CONNECTION_LOG 2>&1 &
+        $EXE -s -c $base_username $base_password $SERVICE_ADDRESS T$port 2 127.0.0.1 15 > $CONNECTION_LOG 2>&1 &
         pid=$!
     fi
 
@@ -783,7 +812,7 @@ else
     fi
 
 
-    # Wait for WeavedConnectd to startup and connect
+    # Wait for connectd to startup and connect
     log_event $CONNECTION_LOG
 
     retval=$?
@@ -796,7 +825,7 @@ else
     #
     # Touch port active file
     #
-    touch "$WEAVED_DIR/${port}.active"
+    touch "$REMOT3IT_DIR/${port}.active"
 
     #
     #
@@ -804,6 +833,7 @@ else
     if [ $VERBOSE -gt 0 ]; then
         echo "Running command>> ssh ${user}127.0.0.1 -p$port"
     fi
+    printf "Starting SSH connection...\n"
     ssh "${user}127.0.0.1" -p$port
 
 

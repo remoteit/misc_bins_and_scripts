@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Weaved Shell Script Lib - Just a simple library of handy shell script functions
+# remot3.it Shell Script Lib - Just a simple library of handy shell script functions
 #
-# mike@weaved
+# mike@remot3.it
 #
 #
 # Notes

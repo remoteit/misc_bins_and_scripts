@@ -169,7 +169,7 @@ printf "\n%s\n\n\n" "$man_text"
 #
 usage()
 {
-        echo "Usage: $0 [-v (verbose)] [-v (maximum verbosity)] [-l(ist services only)] [-c(leanup)] [-r(eset to default)] [-m(an page)] [-p (use PEM key for SSH login)] [-h (this message)] [user@]<devicename> [passed on to ssh]" >&2
+        echo "Usage: $0 [-v (verbose)] [-v (maximum verbosity)] [-l(ist services only)] [-c(leanup)] [-r(eset to default)] [-m(an page)] [-i (use PEM key for SSH login)] [-h (this message)] [user@]<devicename> [passed on to ssh]" >&2
         echo "     [optional] must specify device name." >&2
         echo "Version $VERSION Build $MODIFIED" >&2
         exit 1 
@@ -585,7 +585,7 @@ create_config
 ################################################
 # parse the flag options (and their arguments) #
 ################################################
-while getopts plvhmcr OPT; do
+while getopts i:lvhmcr OPT; do
     case "$OPT" in
       c)
         cleanup_files
@@ -595,8 +595,9 @@ while getopts plvhmcr OPT; do
         resetToDefault
         exit 0
         ;;
-      p)
-        pemkey=$OPTARG
+      i)
+        pemkey=${OPTARG}
+        echo "pemkey=$pemkey"
         ;;
       m)
         manpage
@@ -608,6 +609,7 @@ while getopts plvhmcr OPT; do
         VERBOSE=$((VERBOSE+1)) ;;
       h | [?])
         # got invalid option
+echo "invalid"
         usage
         ;;
     esac
@@ -618,6 +620,7 @@ shift $(($OPTIND-1))
 
 # make sure we have somthing to connect to
 if [ $# -eq 0 -a "$LIST_ONLY" -ne 1 ]; then
+echo "boop"
     usage
 fi
 
@@ -709,7 +712,7 @@ else
     retval=$?
     if [ "$retval" == 0 ]
     then
-        echo "Service not found"
+        echo "Service $device not found"
         exit 255
     fi
 
@@ -830,11 +833,18 @@ else
     #
     #
     #
-    if [ $VERBOSE -gt 0 ]; then
-        echo "Running command>> ssh ${user}127.0.0.1 -p$port"
-    fi
     printf "Starting SSH connection...\n"
-    ssh "${user}127.0.0.1" -p$port
+    if [ "$pemkey" == "" ]; then
+        if [ $VERBOSE -gt 0 ]; then
+            echo "Running command>> ssh ${user}127.0.0.1 -p$port"
+        fi
+        ssh "${user}127.0.0.1" -p$port
+    else
+        if [ $VERBOSE -gt 0 ]; then
+            echo "Running command>> ssh -i "$pemkey" ${user}127.0.0.1 -p$port"
+        fi
+        ssh -i "$pemkey" "${user}127.0.0.1" -p$port
+    fi
 
 
     echo "Done"

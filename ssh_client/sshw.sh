@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-#  SSH wrapper and working example for Weaved Direct Connections
+#  SSH wrapper and working example for remot3.it Direct Connections
 #
-#  sshw <-v> <-v> <user@>weavedsshdevicename
+#  sshw <-v> <-v> <user@>remot3.it_sshdevicename
 #
 #  <optional>  -v = verbose -v -v =maximum verbosity
 #
@@ -10,7 +10,7 @@
 #
 #  License See : https://github.com/weaved/ssh_client
 #
-#  Weaved Inc : www.weaved.com
+#  remot3.it Inc : https://remot3.it
 #
 #  Author : https://github.com/lowerpower
 #
@@ -21,8 +21,8 @@ source lib.sh
 #set -x
 
 #### Settings #####
-VERSION=0.0.8
-MODIFIED="Nov 05, 2015"
+VERSION=0.0.9
+MODIFIED="Jan 14, 2018"
 #
 # Config Dir
 #
@@ -35,7 +35,7 @@ CONNECTION_LOG="$WEAVED_DIR/log.$$.txt"
 #
 #
 BIN_DIR=/usr/local/bin
-EXE=weavedConnectd
+EXE=connectd
 #
 # Save Auth in homedir
 #
@@ -90,7 +90,7 @@ read -d '' man_text << EOF
 
 SSHW - A ssh connection wrapper for Weaved
 ------------------------------------------
-This software allows you to make ssh connections to your Weaved enabled ssh servers.
+This software allows you to make ssh connections to your remot3.it enabled ssh servers.
 
 Your username and password will be stored in ~/.weaved/auth.  In the event of a "102] login failure" error, delete this file and try again.
 
@@ -104,7 +104,7 @@ To make an ssh connection to any given device, use:
 
 username is the ssh login name of the device.  For Raspberry Pi Raspbian OS, this is usually "pi".  Other embedded OSes often use "root".
 
-devicename is the Weaved name you gave to this device connection.
+devicename is the remot3.it name you gave to this device's SSH connection.
 
 If your device name has spaces in it, surround "username@device name" with quotes.
 
@@ -132,31 +132,29 @@ After running this, you will need to log in again.
 
 How the script works
 
-The script starts by logging into the Weaved server to obtain a login token.  This API call is documented here:
+The script starts by logging into the remot3.it server to obtain a login token.  All API calls are documented here:
 
-http://docs.weaved.com/docs/userlogin
+https://remot3it.readme.io/v23.5/reference
 
-The user token is sent to the Device List API call in order to retrieve the full device list associated with this account:
-
-http://docs.weaved.com/docs/devicelistall
+The user token is sent to the Device List API call in order to retrieve the full device list associated with this account.
 
 From there we parse the JSON output of the device list and find the entry corresponding to the device name you gave.  We find the UID (JSON ["deviceaddress"]) for this entry and use this in conjunction with the WeavedConnect daemon (weavedconnectd) in client mode to initiate a peer to peer connection.
 
-/usr/bin/weavedconnectd -c <base64 of username> <base64 of password> <UID> T<portnum> <Encryption mode> <localhost address> <maxoutstanding>
+/usr/bin/connectd -c <base64 of username> <base64 of password> <UID> T<portnum> <Encryption mode> <localhost address> <maxoutstanding>
 
 -c = client mode
-<base64 of username> = Weaved user name, base64 encoded
-<base64 of password> = Weaved password, base64 encoded
-<UID> = Weaved UID for this device connections
+<base64 of username> = remot3.it user name, base64 encoded
+<base64 of password> = remot3.it password, base64 encoded
+<UID> = remot3.it UID for this device connections
 <portnum> = port to use on localhost address
 <Encryption mode> = 1 or 2
 <localhost address> = 127.0.0.1
 <maxoutstanding> = 12
 
 Example:
-/usr/bin/weavedconnectd -c ZmF1bHReaX5lMTk9OUB5YWhvby5jb20= d5VhdmVkFjAxWg== 80:00:00:0F:96:00:01:D3 T33000 1 127.0.0.1 12
+/usr/bin/connectd -c ZmF1bHReaX5lMTk9OUB5YWhvby5jb20= d5VhdmVkFjAxWg== 80:00:00:0F:96:00:01:D3 T33000 1 127.0.0.1 12
 
-Now we have a listener at 127.0.0.1:33000 that is a connection through Weaved to your remote device.
+Now you have a listener at 127.0.0.1:33000 that is a connection through Weaved to your remote device.
 
 The command line ssh client is launched and you are greeted with a request for your SSH password.  Until the port assignment values are cached, you may see SSH security warnings.
 
@@ -183,7 +181,7 @@ usage()
 cleanup_files()
 {
     if [ $VERBOSE -gt 0 ]; then
-        printf "Cleaning up Weaved runtime files.  Removing auth file and active files.\n"
+        printf "Cleaning up remot3.it runtime files.  Removing auth file and active files.\n"
     fi   
     # reset auth
     rm -f $AUTH
@@ -197,7 +195,7 @@ cleanup_files()
 resetToDefault()
 {
     if [ $VERBOSE -gt 0 ]; then
-        printf "Resetting Weaved settings to default.\n"
+        printf "Resetting remot3.it settings to default.\n"
     fi   
     rm -f ${WEAVED_DIR}/*
 }
@@ -555,7 +553,7 @@ log_event()
 #
 # Create the config directory if not there
 #
-echo "Weaved sshw.sh Version $VERSION $MODIFIED"
+echo "remot3.it sshw.sh Version $VERSION $MODIFIED"
 create_config
 
 ################################################
@@ -614,7 +612,7 @@ retval=$?
 if [ "$retval" != 0 ]; then
     # Lets Login
     if [ $VERBOSE -gt 0 ]; then
-        echo "Use stored Weaved credentials for user $username"
+        echo "Use stored remot3.it credentials for user $username"
     fi
 else
     getUserAndPassword
@@ -650,7 +648,7 @@ else
     if [ $SAVE_AUTH -gt 0 ]; then
         if [ ! -e "$AUTH" ] ; then
             if [ $VERBOSE -gt 0 ]; then
-                echo "Saving Weaved credenials for $username"
+                echo "Saving remot3.it credentials for $username"
             fi
             # Save either pw or hash depending on settings
             if [ $USE_AUTHHASH -eq 1 ]; then
@@ -791,7 +789,7 @@ else
     retval=$?
     if [ "$retval" != 0 ]
     then        
-        echo "Error in starting weavedConnectd daemon or connecting to $device ($retval)"
+        echo "Error in starting connectd daemon or connecting to $device ($retval)"
         cleanup
         exit 255
     fi

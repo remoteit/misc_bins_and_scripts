@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-#  SSH wrapper and working example for remot3.it Direct Connections
+#  SMB wrapper and working example for Weaved Direct Connections
 #
-#  sshw <-v> <-v> <user@>remot3.it_sshdevicename
+#  smbw <-v> <-v> <user@>weavedsshdevicename
 #
 #  <optional>  -v = verbose -v -v =maximum verbosity
 #
@@ -10,19 +10,19 @@
 #
 #  License See : https://github.com/weaved/ssh_client
 #
-#  remot3.it Inc : https://remot3.it
+#  Weaved Inc : www.weaved.com
 #
 #  Author : https://github.com/lowerpower
 #
 
 # include shell script lib, must be in path or specify path here
-source lib.sh
+source wlib.sh
 
 #set -x
 
 #### Settings #####
-VERSION=0.0.9
-MODIFIED="Jan 14, 2018"
+VERSION=0.0.8
+MODIFIED="Nov 05, 2015"
 #
 # Config Dir
 #
@@ -35,7 +35,7 @@ CONNECTION_LOG="$WEAVED_DIR/log.$$.txt"
 #
 #
 BIN_DIR=/usr/local/bin
-EXE=connectd
+EXE=weavedConnectd
 #
 # Save Auth in homedir
 #
@@ -88,73 +88,73 @@ manpage()
 #
 read -d '' man_text << EOF
 
-SSHW - A ssh connection wrapper for Weaved
-------------------------------------------
-This software allows you to make ssh connections to your remot3.it enabled ssh servers.
+SMBW - A samba connection wrapper for Weaved on the MAC
+-------------------------------------------------------
+This software allows you to make smb connections to your Weaved enabled samba servers and attach them to MAC finder.
 
 Your username and password will be stored in ~/.weaved/auth.  In the event of a "102] login failure" error, delete this file and try again.
 
 To get a list of all devices associated with your account, use:
 
-./sshw.sh -l
+./smbw.sh -l
 
-To make an ssh connection to any given device, use:
+To make an smb connection to any given device, use:
 
-./sshw.sh username@device-name
+./smbw.sh device-name
 
-username is the ssh login name of the device.  For Raspberry Pi Raspbian OS, this is usually "pi".  Other embedded OSes often use "root".
+devicename is the Weaved name you gave the smb device.
 
-devicename is the remot3.it name you gave to this device's SSH connection.
-
-If your device name has spaces in it, surround "username@device name" with quotes.
+If your device name has spaces in it, surround "device name" with quotes.
 
 Verbose output
 
 To get more information about the internal operation of the script, use one or two -v switches, e.g.
 
-./sshw.sh -v username@device-name
+./smb.sh -v device-name
 
-./sshw.sh -v -v username@device-name
+./smb.sh -v -v device-name
 
 Clearing the cache
 
 To clear out all cached data (port assignments, device list)
 
-./sshw.sh -r
+./smbw.sh -r
 
 Connection times may be a little slower and you may get SSH connection security warnings after doing this until all devices have been conneced to once.
 
 To cleanup (reset login authorization and active port assignments)
 
-./sshw.sh -c
+./smbw.sh -c
 
 After running this, you will need to log in again.
 
 How the script works
 
-The script starts by logging into the remot3.it server to obtain a login token.  All API calls are documented here:
+The script starts by logging into the Weaved server to obtain a login token.  This API call is documented here:
 
-https://remot3it.readme.io/v23.5/reference
+http://docs.weaved.com/docs/userlogin
 
-The user token is sent to the Device List API call in order to retrieve the full device list associated with this account.
+The user token is sent to the Device List API call in order to retrieve the full device list associated with this account:
+
+http://docs.weaved.com/docs/devicelistall
 
 From there we parse the JSON output of the device list and find the entry corresponding to the device name you gave.  We find the UID (JSON ["deviceaddress"]) for this entry and use this in conjunction with the WeavedConnect daemon (weavedconnectd) in client mode to initiate a peer to peer connection.
 
-/usr/bin/connectd -c <base64 of username> <base64 of password> <UID> T<portnum> <Encryption mode> <localhost address> <maxoutstanding>
+/usr/bin/weavedconnectd -c <base64 of username> <base64 of password> <UID> T<portnum> <Encryption mode> <localhost address> <maxoutstanding>
 
 -c = client mode
-<base64 of username> = remot3.it user name, base64 encoded
-<base64 of password> = remot3.it password, base64 encoded
-<UID> = remot3.it UID for this device connections
+<base64 of username> = Weaved user name, base64 encoded
+<base64 of password> = Weaved password, base64 encoded
+<UID> = Weaved UID for this device connections
 <portnum> = port to use on localhost address
 <Encryption mode> = 1 or 2
 <localhost address> = 127.0.0.1
 <maxoutstanding> = 12
 
 Example:
-/usr/bin/connectd -c ZmF1bHReaX5lMTk9OUB5YWhvby5jb20= d5VhdmVkFjAxWg== 80:00:00:0F:96:00:01:D3 T33000 1 127.0.0.1 12
+/usr/bin/weavedconnectd -c ZmF1bHReaX5lMTk9OUB5YWhvby5jb20= d5VhdmVkFjAxWg== 80:00:00:0F:96:00:01:D3 T33000 1 127.0.0.1 12
 
-Now you have a listener at 127.0.0.1:33000 that is a connection through Weaved to your remote device.
+Now we have a listener at 127.0.0.1:33000 that is a connection through Weaved to your remote device.
 
 The command line ssh client is launched and you are greeted with a request for your SSH password.  Until the port assignment values are cached, you may see SSH security warnings.
 
@@ -168,7 +168,7 @@ printf "\n%s\n\n\n" "$man_text"
 #
 usage()
 {
-        echo "Usage: $0 [-v (verbose)] [-v (maximum verbosity)] [-l(ist devices only)] [-c(leanup)] [-r(eset to default)] [-m(an page)] [-h (this message)] [user@]<devicename> [passed on to ssh]" >&2
+        echo "Usage: $0 [-v (verbose)] [-v (maximum verbosity)] [-l(ist devices only)] [-c(leanup)] [-r(eset to default)] [-m(an page)] [-h (this message)] <devicename>" >&2
         echo "     [optional] must specify device name." >&2
         echo "Version $VERSION Build $MODIFIED" >&2
         exit 1 
@@ -181,7 +181,7 @@ usage()
 cleanup_files()
 {
     if [ $VERBOSE -gt 0 ]; then
-        printf "Cleaning up remot3.it runtime files.  Removing auth file and active files.\n"
+        printf "Cleaning up Weaved runtime files.  Removing auth file and active files.\n"
     fi   
     # reset auth
     rm -f $AUTH
@@ -195,7 +195,7 @@ cleanup_files()
 resetToDefault()
 {
     if [ $VERBOSE -gt 0 ]; then
-        printf "Resetting remot3.it settings to default.\n"
+        printf "Resetting Weaved settings to default.\n"
     fi   
     rm -f ${WEAVED_DIR}/*
 }
@@ -553,7 +553,7 @@ log_event()
 #
 # Create the config directory if not there
 #
-echo "remot3.it sshw.sh Version $VERSION $MODIFIED"
+echo "Weaved smbw.sh Version $VERSION $MODIFIED"
 create_config
 
 ################################################
@@ -588,7 +588,7 @@ done
 shift $(($OPTIND-1))
 
 # make sure we have somthing to connect to
-if [ $# -eq 0 -a "$LIST_ONLY" -ne 1 ]; then
+if [ $# -eq 0 ] && [ $LIST_ONLY -eq 0 ]; then
     usage
 fi
 
@@ -612,15 +612,17 @@ retval=$?
 if [ "$retval" != 0 ]; then
     # Lets Login
     if [ $VERBOSE -gt 0 ]; then
-        echo "Use stored remot3.it credentials for user $username"
+        echo "Use stored Weaved credentials for user $username"
     fi
+    force_login=0
 else
     getUserAndPassword
+    force_login=1
 fi
 
 #check device cache to see if we have device in cache
 checkDeviceCache
-if [ $? = 1 ] && [ "$LIST_ONLY" -eq 0 ]; then
+if [ $? = 1 ] && [ "$LIST_ONLY" -eq 0 ] && [ $force_login -eq 0 ]; then
     # device found in cache, 
     if [ $VERBOSE -gt 0 ]; then
         printf "Found ${device} in cache with UID of ${DEVICE_ADDRESS} and port ${port}.  Trying fast connect, assuming credentials are valid and device is active.\n"
@@ -648,7 +650,7 @@ else
     if [ $SAVE_AUTH -gt 0 ]; then
         if [ ! -e "$AUTH" ] ; then
             if [ $VERBOSE -gt 0 ]; then
-                echo "Saving remot3.it credentials for $username"
+                echo "Saving Weaved credenials for $username"
             fi
             # Save either pw or hash depending on settings
             if [ $USE_AUTHHASH -eq 1 ]; then
@@ -732,10 +734,12 @@ if [  -e $WEAVED_DIR/$port.active ]; then
     echo "102"
     if [ $VERBOSE -gt 0 ]; then
         #printf "Port ${port} is already active, connecting to existing tunnel.\n"
-        echo "Running command>> ssh ${user}127.0.0.1 -p$port"
+        echo "Running command>> open \"smb://127.0.0.1:$port"
     fi
-    ssh "${user}127.0.0.1" -p$port
-    #
+    #ssh "${user}127.0.0.1" -p$port
+    open -a "Safari" "smb://127.0.0.1:$port"
+    read -p "Press [Enter] to shutdown weaved connection to $device"
+   #
     echo "done"
 
 else
@@ -789,7 +793,7 @@ else
     retval=$?
     if [ "$retval" != 0 ]
     then        
-        echo "Error in starting connectd daemon or connecting to $device ($retval)"
+        echo "Error in starting weavedConnectd daemon or connecting to $device ($retval)"
         cleanup
         exit 255
     fi
@@ -802,10 +806,11 @@ else
     #
     #
     if [ $VERBOSE -gt 0 ]; then
-        echo "Running command>> ssh ${user}127.0.0.1 -p$port"
+        echo "Running command>> open \"smb://127.0.0.1:$port\""
     fi
-    ssh "${user}127.0.0.1" -p$port
-
+    open -a "Safari" "smb://127.0.0.1:$port"
+ 
+    read -p "Press [Enter] to shutdown weaved connection to $device"
 
     echo "Done"
 

@@ -537,6 +537,7 @@ log_event()
                     ;;
                 *Proxy\ started.*)
                     kill -3 $TPID 
+                    echo
                     echo "P2P tunnel connected on port $port" 
                     return 0
                 ;;
@@ -553,6 +554,7 @@ log_event()
                 *state\ 5*)
                     printf "."
                     if [ $VERBOSE -gt 0 ]; then
+                        echo
                         echo "Connected to service, starting P2P tunnel"
                     fi
                     ;;
@@ -597,7 +599,7 @@ while getopts i:lvhmcr OPT; do
         ;;
       i)
         pemkey=${OPTARG}
-        echo "pemkey=$pemkey"
+#        echo "pemkey=$pemkey"
         ;;
       m)
         manpage

@@ -401,7 +401,7 @@ display_services()
         service_name=$(jsonval "$i" "devicealias")
         service_state=$(jsonval "$i" "devicestate")
         service_service=$(jsonval "$i" "servicetitle")
-        if [ "$service_service" != "" ]; then
+        if [ "$service_service" == "HTTP" ]; then
             printf "%-30s | %-15s |  %-10s \n" $service_name $service_service $service_state
         fi
         #echo "$service_name : $service_service : $service_state"
@@ -614,7 +614,6 @@ shift $(($OPTIND-1))
 
 # make sure we have somthing to connect to
 if [ $# -eq 0 -a "$LIST_ONLY" -ne 1 ]; then
-echo "boop"
     usage
 fi
 
@@ -693,7 +692,7 @@ else
 
     if [ "$LIST_ONLY" -eq 1 ]; then
         # just display list only
-        echo "Available SSH services"
+        echo "Available HTTP services"
         echo
         display_services
         exit 0

@@ -72,10 +72,12 @@ if [ "$BASEPLATFORM" = "mips" ]; then
 elif [ "$BASEPLATFORM" = "arm" ]; then
     downloadAndTestDaemon arm-gnueabi
     downloadAndTestDaemon arm-gnueabi-static
-    downloadAndTestDaemon arm-linaro-static
+    downloadAndTestDaemon arm-linaro.static
     downloadAndTestDaemon arm-uclib
     downloadAndTestDaemon arm-uclib-static
     downloadAndTestDaemon pi
+    downloadAndTestDaemon montavista-arm
+    downloadAndTestDaemon montavista-arm-static
 fi
 
 exit 0

@@ -62,9 +62,12 @@ else
 fi
 
 if [ "$BASEPLATFORM" = "mips" ]; then
-    downloadAndTestDaemon mips-msb-uClib
-    downloadAndTestDaemon mips-uclib-0.9.33.2
-    downloadAndTestDaemon mips-uclib-0.9.33.2.static
+    downloadAndTestDaemon mips-24kec
+    downloadAndTestDaemon mips-24kec_static
+    downloadAndTestDaemon mips-34kc
+    downloadAndTestDaemon mips-34kc_static
+    downloadAndTestDaemon mips-gcc-4.7.3
+    downloadAndTestDaemon mips-gcc-4.7.3_static
     downloadAndTestDaemon mipsel-bcm5354
     downloadAndTestDaemon mipsel-bcm5354-static
     downloadAndTestDaemon mipsel-gcc342

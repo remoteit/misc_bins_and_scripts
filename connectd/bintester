@@ -73,14 +73,14 @@ if [ "$BASEPLATFORM" = "mips" ]; then
     downloadAndTestDaemon mipsel-gcc342
     downloadAndTestDaemon mipsel-gcc342-static
 elif [ "$BASEPLATFORM" = "arm" ]; then
+    downloadAndTestDaemon arm-android
+    downloadAndTestDaemon arm-android_static
     downloadAndTestDaemon arm-gnueabi
-    downloadAndTestDaemon arm-gnueabi-static
-    downloadAndTestDaemon arm-linaro.static
-    downloadAndTestDaemon arm-uclib
-    downloadAndTestDaemon arm-uclib-static
-    downloadAndTestDaemon pi
-    downloadAndTestDaemon montavista-arm
-    downloadAndTestDaemon montavista-arm-static
+    downloadAndTestDaemon arm-gnueabi_static
+    downloadAndTestDaemon arm-linaro-pi
+    downloadAndTestDaemon arm-linaro-pi_static
+    downloadAndTestDaemon arm-v5tle
+    downloadAndTestDaemon arm-v5tle_static
 fi
 
 exit 0

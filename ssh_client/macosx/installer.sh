@@ -83,7 +83,7 @@ ln -s /usr/local/bin/smbw.sh /usr/local/bin/smbw
 printf "."
 
 cp ${BINARY} /usr/local/bin/connectd
-chmod 755 /usr/local/bin/cnnectd
+chmod 755 /usr/local/bin/connectd
 echo " "
 echo " "
 echo "sshw sftpw wweb and smbw are now installed"

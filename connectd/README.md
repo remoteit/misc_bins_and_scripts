@@ -1,7 +1,18 @@
 Precompiled connectd bins
 =========================
 
-Precompiled Bins for different OS and Architectures Version 4.0
+Precompiled Bins for different OS and Architectures Version 4.1
+
+Version 4.1
+===========
+
+-   Ping time control for P2P links optimized and fixed
+
+-   !! return codes always returned correctly
+
+-   !! return codes have numeric values added
+
+-   Suppress output now works for -nc
 
 Version 4.0
 ===========

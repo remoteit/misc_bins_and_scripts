@@ -1,7 +1,18 @@
 Precompiled connectd bins
 =========================
 
-Precompiled Bins for different OS and Architectures Version 4.1
+Precompiled Bins for different OS and Architectures Version 4.2
+
+Version 4.2
+===========
+
+-   Zero window starvation fix.
+
+-   Spelling error fix
+
+-   CPU utilization reduction
+
+-   NATPMP windows corner case fix
 
 Version 4.1
 ===========

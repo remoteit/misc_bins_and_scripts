@@ -1,7 +1,7 @@
 Precompiled connectd bins
 =========================
 
-Precompiled Bins for different OS and Architectures Version 4.2
+Precompiled Bins for different OS and Architectures Version 4.3
 
 Version 4.3
 ===========

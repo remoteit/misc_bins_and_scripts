@@ -3,6 +3,14 @@ Precompiled connectd bins
 
 Precompiled Bins for different OS and Architectures Version 4.2
 
+Version 4.3
+===========
+
+-   Version Reporting.
+
+-   Copyright Update.
+
+
 Version 4.2
 ===========
 

@@ -3,7 +3,7 @@ Precompiled connectd bins
 
 Precompiled Bins for different OS and Architectures Version 4.4
 
-Version 4.3
+Version 4.4
 ===========
 
 -   Multiple P2P connections to one service connection fix.

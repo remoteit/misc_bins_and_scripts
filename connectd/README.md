@@ -52,8 +52,8 @@ Version 4.0
 
 -   Bug fixes
 
-bintester script -
-==================
+bintester script
+================
 
 Download and run the bintester to find the best daemon for ARM and MIPS
 platforms

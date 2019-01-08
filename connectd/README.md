@@ -8,7 +8,11 @@ Version 4.5
 
 -   Return codes are retuned on exit
 
--   
+-   Better error handling of port already in use condition.
+
+-   Performance Enhancements
+
+-   Copyright Update.
 
 Version 4.4
 ===========
@@ -187,3 +191,12 @@ Currently here are:
 -   connectd.x86-ubuntu16.04_static: ELF 32-bit LSB executable, Intel 80386,
     version 1 (GNU/Linux), statically linked, for GNU/Linux 2.6.32,
     BuildID[sha1]=af2acdef19a2ae8c5927acbf234643fedee043c3, stripped
+
+-   connectd.aarm64-ubuntu16.04: ELF 64-bit LSB executable, ARM aarch64, 
+    version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, 
+    for GNU/Linux 3.7.0, BuildID[sha1]=711191dca64d9240bb9c22dd2ba797a404fafbf9, stripped
+
+-   connectd.aarm64-ubuntu16.04_static: ELF 64-bit LSB executable, ARM aarch64, 
+    version 1 (SYSV), statically linked, for GNU/Linux 3.7.0, 
+    BuildID[sha1]=4201f0c8bc9447626ea23c457859b09612701d3f, stripped
+

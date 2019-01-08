@@ -1,7 +1,14 @@
 Precompiled connectd bins
 =========================
 
-Precompiled Bins for different OS and Architectures Version 4.4
+Precompiled Bins for different OS and Architectures Version 4.5
+
+Version 4.5
+===========
+
+-   Return codes are retuned on exit
+
+-   
 
 Version 4.4
 ===========

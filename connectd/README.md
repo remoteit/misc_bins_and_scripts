@@ -59,22 +59,32 @@ Version 4.0
 
 -   Bug fixes
 
-bintester script
+auto-install.sh script
 ================
 
-Download and run the bintester to find the best daemon for ARM and MIPS
-platforms
+Download and run auto-install.sh to find the best daemon for x86, Arm and MIPS
+platforms running Linux.  If you are using a Debian-derived OS, a Debian package
+will be used.  If not, a tar package will be used.
 
 -   cd /tmp
 
 -   sudo wget
-    https://github.com/weaved/misc_bins_and_scripts/raw/master/connectd/bintester
+    https://github.com/remoteit/installer/raw/master/scripts/auto-install.sh
 
--   sudo chmod +x bintester
+-   sudo chmod +x auto-install.sh
 
--   ./bintester arch
+-   sudo ./auto-install.sh
 
-where arch is either arm or mips
+This will run some tests and if a matching package is found, it will be installed 
+automatically.  
+
+Next, you can run
+
+sudo connectd_installer
+
+In the event a matching package is not found, you may see an error 
+message.  Please send an e-mail to support@remote.it so we can get you the
+right package.
 
 Precompiled Bin Description
 ===========================

@@ -1,4 +1,7 @@
 # Misc Bins and Scripts
+
+### [ARCHIVED] Please see [remoteit/installer](https://github.com/remoteit/installer) and [remoteit/connectd](https://github.com/remoteit/connectd)
+
 Miscellaneous remote.it Embedded Bins and Scripts
 
 ### Misc Scripts
